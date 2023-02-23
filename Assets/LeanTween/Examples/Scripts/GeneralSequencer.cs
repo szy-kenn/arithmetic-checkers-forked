@@ -20,7 +20,7 @@ public class GeneralSequencer : MonoBehaviour {
 
 		seq.append( LeanTween.moveY( avatar1, avatar1.transform.localPosition.y + 6f, 1f).setEaseOutQuad() );
 
-        // Power up star, use insert when you want to branch off from the regular sequence (this does not push back the delay of other subsequent tweens)
+        // Power up star, use insert when you want to branch off from the regular sequence (this does not push back the Delay of other subsequent tweens)
         seq.insert( LeanTween.alpha(star, 0f, 1f) );
         seq.insert( LeanTween.scale( star, Vector3.one * 3f, 1f) );
 

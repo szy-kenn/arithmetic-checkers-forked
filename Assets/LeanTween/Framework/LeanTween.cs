@@ -1045,7 +1045,7 @@ public class LeanTween : MonoBehaviour {
     * @return {LTSeq} LTSeq an object that you can add tweens, methods and time on to
     * @example
     * var seq = LeanTween.sequence();<br />
-    * seq.add(1f); // delay everything one second<br />
+    * seq.add(1f); // Delay everything one second<br />
     * seq.add( () => { // fire an event before start<br />
     * &#160;Debug.Log("I have started");<br />
     * });<br />
@@ -1172,7 +1172,7 @@ public class LeanTween : MonoBehaviour {
     * @method LeanTween.alphaVertex
     * @param {GameObject} gameObject:GameObject Gameobject that you wish to alpha
     * @param {float} to:float The alpha value you wish to tween to
-    * @param {float} time:float The time with which to delay before calling the function
+    * @param {float} time:float The time with which to Delay before calling the function
     * @return {LTDescr} LTDescr an object that distinguishes the tween
     */
     public static LTDescr alphaVertex(GameObject gameObject, float to, float time){
@@ -1224,7 +1224,7 @@ public class LeanTween : MonoBehaviour {
     * 
     * @method LeanTween.delayedCall
     * @param {GameObject} gameObject:GameObject Gameobject that you wish to associate with this delayed call
-    * @param {float} time:float delay The time you wish to pass before the method is called
+    * @param {float} time:float Delay The time you wish to pass before the method is called
     * @return {LTDescr} LTDescr an object that distinguishes the tween
     * @example LeanTween.delayedCall(gameObject, 1f, ()=>{ <br />Debug.Log("I am called one second later!");<br /> }));
     */
@@ -1850,13 +1850,13 @@ public class LeanTween : MonoBehaviour {
     * <i>Example Javascript: </i><br />
     * LeanTween.value( gameObject, updateValueExampleCallback, 180f, 270f, 1f).setEase(LeanTweenType.easeOutElastic);<br />
     * function updateValueExampleCallback( val:float, ratio:float ){<br />
-    * &#160; Debug.Log("tweened value:"+val+" percent complete:"+ratio*100);<br />
+    * &#160; Debug.Log("tweened value:"+val+" _percent complete:"+ratio*100);<br />
     * }<br />
     * <br />
     * <i>Example C#: </i> <br />
     * LeanTween.value( gameObject, updateValueExampleCallback, 180f, 270f, 1f).setEase(LeanTweenType.easeOutElastic);<br />
     * void updateValueExampleCallback( float val, float ratio ){<br />
-    * &#160; Debug.Log("tweened value:"+val+" percent complete:"+ratio*100);<br />
+    * &#160; Debug.Log("tweened value:"+val+" _percent complete:"+ratio*100);<br />
     * }<br />
     */
 
