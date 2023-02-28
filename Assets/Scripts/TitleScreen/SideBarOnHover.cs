@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class SideBarOnHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class SideBarOnHover : MonoBehaviour, IPointerClickHandler
 {
     public GameObject SideBar;
     public GameObject TitleScreen;
@@ -60,6 +60,7 @@ public class SideBarOnHover : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     void Update()
     {
+      
 
         if (IsHovered)
         {
@@ -109,23 +110,33 @@ public class SideBarOnHover : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     void Toggle()
     {
-        IsHovered = !IsHovered;
         ChangedValue = true;
+        if (IsHovered)
+        {
+            WaitingTime = 0;
+            _percent = 0f;
+            IsHovered = false;
+        }
+        else
+        {
+            IsHovered = true;
+        }
     }
 
-    void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
+    //void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
+    //{
+    //    Toggle();
+    //    WaitingTime = 0;
+    //    _percent = 0f;
+    //}
+
+    //void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
+    //{
+    //    Toggle();
+    //}
+
+    public void OnPointerClick(PointerEventData eventData)
     {
         Toggle();
-        WaitingTime = 0;
-        _percent = 0f;
     }
-
-    void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
-    {
-        Toggle();
-    }
-
-
-
-   
 }
