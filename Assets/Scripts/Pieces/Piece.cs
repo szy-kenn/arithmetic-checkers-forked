@@ -2,14 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Piece : MonoBehaviour
+public class Piecex : MonoBehaviour
 {
     // Start is called before the first frame update
     int id;
     int value;
     bool isBlue = false;
 
-    Piece(int id, int value, bool isBlue)
+    Piecex(int id, int value, bool isBlue)
     {
         this.id = id;
         this.value = value;
@@ -26,7 +26,7 @@ public class Piece : MonoBehaviour
     }
 
     //Captures the pieces
-    public void capturePiece(int id, Piece piece) 
+    public void CapturePiece(int id, Piece piece) 
     {
         if (this.id == id)
         {
@@ -34,7 +34,7 @@ public class Piece : MonoBehaviour
         }
     }
 
-    public void promotePiece(int id)
+    public void PromotePiece(int id)
     {
         if (this.id == id)
         {
