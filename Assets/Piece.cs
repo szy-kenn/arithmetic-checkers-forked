@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using System;
 
 public class Piece : MonoBehaviour
 {
@@ -57,6 +58,10 @@ public class Piece : MonoBehaviour
 
     public void SelectMe()
     {
+        if(EventSystem.current.selectedPiece == this)
+        {
+            Debug.Log($"Im Piece{cellX}{cellY}");
+        }
     }
 
     void OnGUI()

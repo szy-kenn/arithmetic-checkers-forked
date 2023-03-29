@@ -22,8 +22,8 @@ public class EventSystem : MonoBehaviour
     {
         if (onPieceClick != null)
         {
-            onPieceClick();
             selectedPiece = piece;
+            onPieceClick();
             Debug.Log($"[Debug]: Selected piece ({piece.cellX}, {piece.cellY}).");
         }
     }
