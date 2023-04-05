@@ -16,6 +16,8 @@ public class EventSystem : MonoBehaviour
     {
         current = this;
     }
+
+    public event Action initializeCells;
     public event Action onCellClick;
     public event Action onPieceClick;
     // public event Action showIndicator;
@@ -38,6 +40,14 @@ public class EventSystem : MonoBehaviour
         if (Input.GetMouseButtonDown(1))
         {
             Deselect();
+        }
+    }
+
+    void InitializeCells()
+    {
+        if (initializeCells != null)
+        {
+            //
         }
     }
 
@@ -64,8 +74,6 @@ public class EventSystem : MonoBehaviour
             // ShowIndicator();
             selectedPiece = piece;
             onPieceClick();
-            
-            Debug.Log($"Debug]: Selected piece ({piece.col}, {piece.row})");
         }
     }
 
@@ -77,8 +85,6 @@ public class EventSystem : MonoBehaviour
             // ShowIndicator();
             selectedCell = cell;
             onCellClick();
-
-            Debug.Log($"Debug]: Selected cell ({cell.col}, {cell.row})");
         }
     }
 
