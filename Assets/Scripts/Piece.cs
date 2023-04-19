@@ -60,10 +60,11 @@ public class Piece : MonoBehaviour
     void Start()
     {
 
-        if (textValue != null)
-        {
-            textValue.text = value;
-        }
+        /*        if (textValue != null)
+                {
+                    textValue.text = value;
+                }*/
+        textValue.text = value;
 
         CalculatePosition();
     }
@@ -76,6 +77,7 @@ public class Piece : MonoBehaviour
 
     public void SetValue(string value)
     {
+        this.value = value;
         textValue.text = value;
     }
 
