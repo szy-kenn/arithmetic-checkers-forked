@@ -17,7 +17,6 @@ public class Init : MonoBehaviour
 
     [SerializeField] int maximumColumns = 8;
     [SerializeField] int maximumRows = 8;
-    [SerializeField] Board board;
     [SerializeField] Cell _cellPrefab;
     [SerializeField] Piece _piecePrefab;
     
