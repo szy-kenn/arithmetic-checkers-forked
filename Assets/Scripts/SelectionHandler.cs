@@ -13,7 +13,6 @@ public class SelectionHandler : MonoBehaviour
     {
         // EventSystem.current.showIndicator += Show;
         // EventSystem.current.hideIndicator += Hide;
-        // EventSystem.current.moveIndicator += Move;
 
         rect = GetComponent<RectTransform>();
         sprite = GetComponent<SpriteRenderer>();
@@ -23,6 +22,7 @@ public class SelectionHandler : MonoBehaviour
 
     void Start()
     {
+        EventSystem.current.moveIndicator += MoveTo;
 
     }
 
@@ -36,12 +36,9 @@ public class SelectionHandler : MonoBehaviour
         selectionIndicatorPrefab.SetActive(false);
     }
 
-    void Move(Vector2 cell)
+    void MoveTo(Cell cell)
     {
-        float x = (float)(cell[0] * 2.5 + 1.25);
-        float y = (float)(cell[1] * 2.5 + 1.25);
-
-        rect.anchoredPosition = new Vector2(x, y);
+        selectionIndicatorPrefab.transform.position = cell.transform.position;
     }
 
     void ChangeColor()

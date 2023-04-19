@@ -20,11 +20,14 @@ public class Cell : MonoBehaviour
         if (piece != null)
         {
             Debug.Log($"[Debug]: Selected piece ({piece.col}, {piece.row})");
+
+            EventSystem.current.MoveIndicator(this);
             EventSystem.current.selectedPiece = piece;
             EventSystem.current.selectedCell = this;
         } else
         {
             Debug.Log($"[Debug]: Selected cell ({this.col}, {this.row})");
+            EventSystem.current.MoveIndicator(this);
             //EventSystem.current.Select(this);
             if (EventSystem.current.selectedPiece != null)
             {

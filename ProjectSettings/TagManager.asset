@@ -3,7 +3,8 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Cell
   layers:
   - Default
   - TransparentFX
@@ -40,4 +41,19 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Background
+    uniqueID: 3174624001
+    locked: 0
+  - name: Board
+    uniqueID: 3518796917
+    locked: 0
+  - name: Cells
+    uniqueID: 810221099
+    locked: 0
+  - name: Indicators
+    uniqueID: 3098051127
+    locked: 0
+  - name: Chips
+    uniqueID: 3827396539
     locked: 0

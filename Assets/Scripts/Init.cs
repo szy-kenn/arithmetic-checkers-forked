@@ -53,7 +53,7 @@ public class Init : MonoBehaviour
                 float cellPositionY = row * Constants.cellSize + Constants.cellOffset;
                 newCell.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(cellPositionX - 0.25f,
                                                                                              cellPositionY - 0.25f,
-                                                                                             Constants.cellZLocation); // Idk why, but I didn't have to subtract .25 from this before
+                                                                                             0); // Idk why, but I didn't have to subtract .25 from this before
                 newCell.SetColRow(col, row);
                 cells.Add((col, row), newCell);
             }
@@ -86,7 +86,7 @@ public class Init : MonoBehaviour
             float cellPositionY = (row * Constants.pieceScale + Constants.cellOffset);
             newPiece.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(cellPositionX - 0.25f, 
                                                                                     cellPositionY - 0.25f, 
-                                                                                    Constants.pieceZLocation);
+                                                                                    0);
         }
     }
 

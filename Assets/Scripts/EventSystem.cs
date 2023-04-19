@@ -22,7 +22,7 @@ public class EventSystem : MonoBehaviour
     public event Action onPieceClick;
     // public event Action showIndicator;
     public event Action hideIndicator;
-    public event Action<Vector2> moveIndicator;
+    public event Action<Cell> moveIndicator;
 
 
     void FixedUpdate()
@@ -70,7 +70,7 @@ public class EventSystem : MonoBehaviour
     {
         if (onPieceClick != null)
         {
-            MoveIndicator(new Vector2(piece.col, piece.row));
+            // MoveIndicator();
             // ShowIndicator();
             selectedPiece = piece;
             onPieceClick();
@@ -81,7 +81,7 @@ public class EventSystem : MonoBehaviour
     {
         if (onCellClick != null)
         {
-            MoveIndicator(new Vector2(cell.col, cell.row));
+            // MoveIndicator(new Vector2(cell.col, cell.row));
             // ShowIndicator();
             selectedCell = cell;
             onCellClick();
@@ -104,7 +104,7 @@ public class EventSystem : MonoBehaviour
     //     }
     // }
 
-    public void MoveIndicator(Vector2 cell)
+    public void MoveIndicator(Cell cell)
     {
         if (moveIndicator != null)
         {
