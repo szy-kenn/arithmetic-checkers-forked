@@ -93,4 +93,13 @@ public class Piece : MonoBehaviour
     {
         IsKing = value;
     }
+
+    public void MoveMe(Cell cell)
+    {
+        this.transform.position = cell.transform.position;
+        cell.piece = this;
+        EventSystem.current.selectedPiece = null;
+        EventSystem.current.selectedCell.piece = null;
+        EventSystem.current.selectedCell = null;
+    }
 }

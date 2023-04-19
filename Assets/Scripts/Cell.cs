@@ -12,27 +12,24 @@ public class Cell : MonoBehaviour
 
     void Awake()
     {
-        EventSystem.current.onCellClick += SelectMe;
+
     }
 
-    public void Test()
+    public void SelectMe()
     {
         if (piece != null)
         {
             Debug.Log($"[Debug]: Selected piece ({piece.col}, {piece.row})");
-            EventSystem.current.Select(piece);
+            EventSystem.current.selectedPiece = piece;
+            EventSystem.current.selectedCell = this;
         } else
         {
             Debug.Log($"[Debug]: Selected cell ({this.col}, {this.row})");
-            EventSystem.current.Select(this);
-        }
-    }
-
-    void SelectMe()
-    {
-        if (EventSystem.current.selectedCell == this)
-        {
-            if (piece == null) return;
+            //EventSystem.current.Select(this);
+            if (EventSystem.current.selectedPiece != null)
+            {
+                EventSystem.current.selectedPiece.MoveMe(this);
+            }
         }
     }
 

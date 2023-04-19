@@ -22,12 +22,13 @@ public class ObjectDetect : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+            Debug.Log(hit.collider.gameObject.name);
             if (hit.collider != null)
             {
                 if (hit.collider.tag == "Cell")
                 {
                     Cell selectedCell = hit.collider.gameObject.GetComponent<Cell>();
-                    selectedCell.Test();
+                    selectedCell.SelectMe();
                 }
                 //add more else-if statements to add more components that can be detected by the Raycast
                 //Make sure to include every game objects with tags to avoid getting not detected
