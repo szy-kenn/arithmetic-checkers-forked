@@ -5,6 +5,8 @@ using UnityEngine;
 public enum pieceValues {Integers, Naturals};
 public enum pieceMap {Classic, Chess}
 
+public enum MoveType {Normal, Capture}
+
 public class Init : MonoBehaviour
 {
     public pieceValues values;
@@ -87,5 +89,63 @@ public class Init : MonoBehaviour
                                                                                     cellPositionY - 0.25f, 
                                                                                     Constants.pieceZLocation);
         }
+    }
+
+    public void GetMoves(Piece piece, MoveType moveType)
+    {
+        int up = 1;
+        int down = -1;
+
+        if (piece.side == Side.Bot)
+        {
+            CheckLeft(piece, up, moveType);
+            CheckRight(piece, up, moveType);
+        } else if (piece.side == Side.Top)
+        {
+            CheckLeft(piece, down, moveType);
+            CheckRight(piece, down, moveType);
+        }
+    }
+
+    Dictionary<(int, int), Piece> CheckLeft(Piece piece, int direction, MoveType moveType)
+    {
+        Dictionary<(int, int), Piece> moves = new Dictionary<(int, int), Piece>();
+
+        int col = piece.col - 1;
+        int row = piece.row + direction;
+        int nextEnemyPiece = 0;
+        List<Piece> captureables = new List<Piece>();
+
+        while (row < maximumRows)
+        {
+            if (col < 0) break;
+            if (nextEnemyPiece >= 2) break;
+
+            Cell cellToCheck = cells[(col, row)];
+
+            if (cellToCheck.piece == null)
+            {
+                //
+            } else
+            {
+                if (cellToCheck.piece.side == piece.side)
+                {
+                    break;
+                } else
+                {
+                    nextEnemyPiece++;
+                    captureables.Add(cells[(col, row)].piece);
+                }
+            }
+
+            col--;
+        }
+
+        return moves;
+    }
+
+    void CheckRight(Piece piece, int direction, MoveType moveType)
+    {
+        int right = -1;
     }
 }
