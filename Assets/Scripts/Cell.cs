@@ -15,7 +15,7 @@ public class Cell : MonoBehaviour
         EventSystem.current.onCellClick += SelectMe;
     }
 
-    void OnMouseDown()
+    public void Test()
     {
         if (piece != null)
         {
