@@ -549,7 +549,6 @@ GameObject:
   - component: {fileID: 793225251}
   - component: {fileID: 793225252}
   - component: {fileID: 793225253}
-  - component: {fileID: 793225254}
   m_Layer: 0
   m_Name: Board
   m_TagString: Untagged
@@ -646,18 +645,6 @@ MonoBehaviour:
   selectedCell: {fileID: 0}
   selectedPiece: {fileID: 0}
   HasPieceSelected: 0
---- !u!114 &793225254
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 793225250}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 83121457b8e175742a8314147b9959b4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1389580965
 GameObject:
   m_ObjectHideFlags: 0
@@ -853,7 +840,6 @@ MonoBehaviour:
   map: 0
   maximumColumns: 8
   maximumRows: 8
-  board: {fileID: 793225254}
   _cellPrefab: {fileID: -5377934400264723227, guid: d904e31a067395941a5baf6977244e11, type: 3}
   _piecePrefab: {fileID: 5404982523603448962, guid: 907cfa407570aaa43b39511f3fc46029, type: 3}
 --- !u!1001 &1655066228
