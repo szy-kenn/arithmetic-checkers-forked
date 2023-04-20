@@ -45,7 +45,15 @@ public class Cell : MonoBehaviour
 
     public Piece GetPiece()
     {
-        return piece;
+        if( piece != null)
+        {
+            return piece;
+        } else
+        {
+            Debug.Log("No piece inside the cell");
+            return null;
+        }
+
     }
 
     public void SetPiece(Piece pieceToSet)

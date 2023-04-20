@@ -24,6 +24,8 @@ public class EventSystem : MonoBehaviour
     public event Action hideIndicator;
     public event Action<Cell> moveIndicator;
 
+    [SerializeField]
+    public Dictionary<(int, int), Cell> BoardArray = new Dictionary<(int, int), Cell>();
 
     void FixedUpdate()
     {
@@ -110,6 +112,11 @@ public class EventSystem : MonoBehaviour
         {
             moveIndicator(cell);
         }
+    }
+
+    public Cell GetCell(int col, int row)
+    {
+        return BoardArray[(col, row)];
     }
 }
  

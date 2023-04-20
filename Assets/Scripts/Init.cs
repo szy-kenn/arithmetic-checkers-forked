@@ -45,6 +45,7 @@ public class Init : MonoBehaviour
             for (int col = 0; col < maximumColumns; col++)
             {
                 var newCell = Instantiate(_cellPrefab, new Vector3(col, row, 0), Quaternion.identity);
+                EventSystem.current.BoardArray.Add((col, row), newCell);
                 newCell.name = $"Cell ({col}, {row})";
                 newCell.transform.SetParent(transform);
                 newCell.GetComponent<RectTransform>().localScale = new Vector2(Constants.cellSize, Constants.cellSize);
