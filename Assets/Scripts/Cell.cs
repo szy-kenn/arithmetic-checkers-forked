@@ -2,45 +2,68 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum Operation {None, Add, Sub, Mul, Div}
+
 public class Cell : MonoBehaviour
 {
+    public int number;
     public int col, row;
-    public Vector2 cell;
     public Piece piece = null;
+    public Operation operation;
+    public List<Sprite> sprite;
 
-    Piece pieceToReturn;
+    SpriteRenderer spriteRenderer;
 
     void Awake()
     {
-
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
-    public void SelectMe()
+    public Cell((int, int) cell, Piece piece)
+    {
+        this.col = cell.Item1;
+        this.row = cell.Item2;
+        this.piece = piece;
+    }
+
+    public bool HasPiece()
     {
         if (piece != null)
         {
-            Debug.Log($"[Debug]: Selected piece ({piece.col}, {piece.row})");
-
-            EventSystem.current.MoveIndicator(this);
-            EventSystem.current.selectedPiece = piece;
-            EventSystem.current.selectedCell = this;
-        } else
-        {
-            Debug.Log($"[Debug]: Selected cell ({this.col}, {this.row})");
-            EventSystem.current.MoveIndicator(this);
-            //EventSystem.current.Select(this);
-            if (EventSystem.current.selectedPiece != null)
-            {
-                EventSystem.current.selectedPiece.MoveMe(this);
-            }
+            return true;
         }
+        return false;
+    }
+
+    public void SetOperation(Operation value)
+    {
+        operation = value;
+
+        switch (value)
+        {
+            case Operation.Add:
+                spriteRenderer.sprite = sprite[0]; 
+                break;
+            case Operation.Sub:
+                spriteRenderer.sprite = sprite[1]; 
+                break;
+            case Operation.Mul:
+                spriteRenderer.sprite = sprite[2]; 
+                break;
+            case Operation.Div:
+                spriteRenderer.sprite = sprite[3]; 
+                break;
+            default:
+                spriteRenderer.sprite = null; 
+                break;
+        }
+        spriteRenderer.color = Colors.DarkCerulean;
     }
 
     public void SetColRow(int colValue, int rowValue)
     {
         col = colValue;
         row = rowValue;
-        cell = new Vector2(colValue, rowValue);
     }
 
     public Piece GetPiece()
@@ -50,22 +73,18 @@ public class Cell : MonoBehaviour
             return piece;
         } else
         {
-            Debug.Log("No piece inside the cell");
             return null;
         }
 
     }
 
-    public void SetPiece(Piece pieceToSet)
+    public void SetPiece(Piece value)
     {
-        piece = pieceToSet;
+        piece = value;
     }
-
-    public Piece RemovePiece()
+    
+    public void RemovePiece()
     {
-        pieceToReturn = piece;
         piece = null;
-        return pieceToReturn;
     }
-
 }

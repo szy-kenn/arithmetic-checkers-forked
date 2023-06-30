@@ -9,6 +9,8 @@ public enum Side {Bot, Top}
 
 public class Piece : MonoBehaviour
 {
+    public Player owner = null;
+    public Cell cell;
     public int col, row;
     public Vector3 position;
     public string value;
@@ -17,39 +19,28 @@ public class Piece : MonoBehaviour
     public bool IsKing = false;
     public bool HasSkipped = false;
     public bool CanCapture = false;
+    public bool HasCapture = false;
+    public int forward = 0;
+    public List<Move> moves = new List<Move>();
+    public List<Sprite> sprites;
 
     RectTransform rect;
     TextMeshPro textValue;
     SpriteRenderer overlay;
 
-    public void Refresh()
+    public Piece(Side side, Color color, string value, bool IsKing)
     {
-        
+        this.side = side;
+        this.color = color;
+        this.value = value;
+        this.IsKing = IsKing;
     }
 
-    public void CalculatePosition()
+    public List<Move> GetMoves(Piece piece)
     {
-        // cellX = (int)((rectTransform.anchoredPosition.x - offset) / cellSize);
-        // cellY = (int)((rectTransform.anchoredPosition.y - offset) / cellSize);
-        // cell = new Vector2(cellX, cellY);
-
-        // cell = 
-
-        // rectTransform.anchoredPosition3D = new Vector3( , , zLocation);
-    }
-    
-    public void CalculatePosition(Vector2 cell)
-    {
-        // cellX = (int)((rectTransform.anchoredPosition.x - offset) / cellSize);
-        // cellY = (int)((rectTransform.anchoredPosition.y - offset) / cellSize);
-        // cell = new Vector2(cellX, cellY);
-
-        // cell = 
-
-        // rectTransform.anchoredPosition3D = new Vector3( , , zLocation);
+        return new List<Move>();
     }
 
-    // Start is called before the first frame update
     void Awake()
     {
         rect = GetComponent<RectTransform>();
@@ -59,20 +50,22 @@ public class Piece : MonoBehaviour
     
     void Start()
     {
-
-        /*        if (textValue != null)
-                {
-                    textValue.text = value;
-                }*/
         textValue.text = value;
 
-        CalculatePosition();
+        if (IsKing)
+        {
+            overlay.sprite = sprites[1];
+        } else
+        {
+            overlay.sprite = sprites[0];
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    public void SetCell(Cell cell)
     {
-
+        this.cell = cell;
+        this.col = cell.col;
+        this.row = cell.row;
     }
 
     public void SetValue(string value)
@@ -84,6 +77,21 @@ public class Piece : MonoBehaviour
     public void SetTeam(Side value)
     {
         side = value;
+
+        if (value == Side.Bot)
+        {
+            forward = 1;
+            SetOwner(Game.Main.players[0]);
+        } else
+        {
+            forward = -1;
+            SetOwner(Game.Main.players[1]);
+        }
+    }
+
+    public void SetOwner(Player player)
+    {
+        owner = player;
     }
 
     public void SetColor(Color value)
@@ -96,12 +104,31 @@ public class Piece : MonoBehaviour
         IsKing = value;
     }
 
-    public void MoveMe(Cell cell)
+    public void AddMove(Move value)
     {
-        this.transform.position = cell.transform.position;
-        cell.piece = this;
-        EventSystem.current.selectedPiece = null;
-        EventSystem.current.selectedCell.piece = null;
-        EventSystem.current.selectedCell = null;
+        moves.Add(value);
+    }
+
+    public void ClearMoves()
+    {
+        moves.Clear();
+    }
+
+    public void Remove()
+    {
+        Destroy(this.gameObject);
+    }
+
+    public void Promote()
+    {
+        IsKing = true;
+        overlay.sprite = sprites[1];
+        textValue.color = new Color(0, 0, 0, 1);
+    }
+
+    public void Demote()
+    {
+        IsKing = false;
+        overlay.sprite = sprites[0];
     }
 }

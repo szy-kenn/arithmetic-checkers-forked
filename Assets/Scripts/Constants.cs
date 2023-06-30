@@ -8,5 +8,8 @@ public class Constants
     public const float zLocation = -3f;
     public const float pieceZLocation = -2f;
     public const float cellZLocation = -3f;
+
+    // Board size
+    public float[] boardDimensions = {0.03023016f, 0.03809f, 0.3809f};
     
 }
