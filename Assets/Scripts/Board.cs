@@ -141,7 +141,7 @@ public class Board : MonoBehaviour
         return moves;
     }
 
-    List<Move> CheckLeft(Piece piece, int startingRow, int direction, MoveType moveType, bool IsKing=false)
+    List<Move> CheckLeft(Piece piece, int startingRow, int direction, MoveType moveType)
     {
         List<Move> moves = new List<Move>();
         List<Move> captureMoves = new List<Move>();
@@ -163,11 +163,12 @@ public class Board : MonoBehaviour
                 {
                     piece.CanCapture = true;
                     captureMoves.Add(new Move(GetCell(piece.col, piece.row), cellToCheck, cellToCapture.piece));
+                    if (piece.IsKing) moves.Clear();
                 } else
                 {
                     if (piece.forward != direction)
                     {
-                        if (!IsKing) break;
+                        if (!piece.IsKing) break;
                     }
                     moves.Add(new Move(GetCell(piece.col, piece.row), cellToCheck));
                 }
@@ -197,7 +198,7 @@ public class Board : MonoBehaviour
         }
     }
     
-    List<Move> CheckRight(Piece piece, int startingRow, int direction, MoveType moveType, bool IsKing=false)
+    List<Move> CheckRight(Piece piece, int startingRow, int direction, MoveType moveType)
     {
         List<Move> moves = new List<Move>();
         List<Move> captureMoves = new List<Move>();
@@ -219,11 +220,12 @@ public class Board : MonoBehaviour
                 {
                     piece.CanCapture = true;
                     captureMoves.Add(new Move(GetCell(piece.col, piece.row), cellToCheck, cellToCapture.piece));
+                    if (piece.IsKing) moves.Clear();
                 } else
                 {
                     if (piece.forward != direction)
                     {
-                        if (!IsKing) break;
+                        if (!piece.IsKing) break;
                     }
                     moves.Add(new Move(GetCell(piece.col, piece.row), cellToCheck));
                 }

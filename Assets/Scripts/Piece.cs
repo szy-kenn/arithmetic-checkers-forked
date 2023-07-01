@@ -86,6 +86,7 @@ public class Piece : MonoBehaviour
             forward = -1;
             SetOwner(Game.Main.players[1]);
         }
+        owner.pieceCount += 1;
     }
 
     public void SetOwner(Player player)

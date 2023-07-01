@@ -9,6 +9,8 @@ public class Cell : MonoBehaviour
     public int number;
     public int col, row;
     public Piece piece = null;
+    public bool IsEmpty = true;
+    public bool IsValidMove = false;
     public Operation operation;
     public List<Sprite> sprite;
 
@@ -19,11 +21,9 @@ public class Cell : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
-    public Cell((int, int) cell, Piece piece)
+    public void Refresh()
     {
-        this.col = cell.Item1;
-        this.row = cell.Item2;
-        this.piece = piece;
+        IsValidMove = false;
     }
 
     public bool HasPiece()
@@ -71,20 +71,21 @@ public class Cell : MonoBehaviour
         if( piece != null)
         {
             return piece;
-        } else
-        {
-            return null;
         }
-
+        return null;
     }
 
-    public void SetPiece(Piece value)
+    public void SetPiece(Piece piece)
     {
-        piece = value;
+        if (piece == null) return;
+        
+        this.piece = piece;
+        IsEmpty = false;
     }
     
     public void RemovePiece()
     {
         piece = null;
+        IsEmpty = true;
     }
 }

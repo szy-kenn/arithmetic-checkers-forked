@@ -6,10 +6,13 @@ public class Player : MonoBehaviour
 {
     public string playerName = "Player";
     public Side side;
+    public int pieceCount = 0;
     public float score = 0f;
     public bool IsModerator = false;
-
+    public bool IsPlaying = false;
     public Cell selectedCell = null;
+    
+    [SerializeField] GameObject _playerPrefab;
 
     void Start()
     {
@@ -19,6 +22,18 @@ public class Player : MonoBehaviour
     void Update()
     {
         DetectRaycast();
+    }
+
+    public Player Create(Side side, string playerName=null)
+    {
+        var newPlayer = Instantiate(_playerPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+        newPlayer.transform.SetParent(transform);
+        Player c_player = newPlayer.GetComponent<Player>();
+
+        c_player.side = side;
+        if (name != null) c_player.playerName = name;
+
+        return c_player;
     }
 
     void DetectRaycast()

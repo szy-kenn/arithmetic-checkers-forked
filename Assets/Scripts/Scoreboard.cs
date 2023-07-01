@@ -60,6 +60,7 @@ public class Scoreboard : MonoBehaviour
         }
 
         Debug.Log($"[ACTION]: {move.capturingPiece} captured {move.capturedPiece} for {score}");
+        move.score = score;
         Add(move.capturingPiece.owner, score);
         Refresh();
     }

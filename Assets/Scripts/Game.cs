@@ -135,7 +135,7 @@ public class Game : MonoBehaviour
 
     public void Refresh()
     {
-        Debug.Log($"Refreshed");
+        Debug.Log("Refreshed");
         if (refresh != null)
         {
             refresh();
@@ -143,7 +143,9 @@ public class Game : MonoBehaviour
 
         selectedCell = null;
         selectedPiece = null;
+
         validMoves.Clear();
+
         IndicatorHandler.selector.Hide();
         IndicatorHandler.Clear();
 
@@ -174,11 +176,6 @@ public class Game : MonoBehaviour
         {   
             if (player.side != cell.piece.side) return;
 
-            if (onPieceClick != null)
-            {
-                onPieceClick();
-            }
-
             // If a piece had previously captured, only select that piece
             if (movedPiece != null)
             {
@@ -197,9 +194,8 @@ public class Game : MonoBehaviour
             }
         } else
         {
-            if (validMoves.Count != 0)
+            if (cell.IsValidMove)
             {
-                if (selectedPiece == null) return;
                 SelectMove(selectedCell);
             } else
             {
@@ -210,6 +206,11 @@ public class Game : MonoBehaviour
 
     public void SelectPiece(Piece piece)
     {
+        if (onPieceClick != null)
+        {
+            onPieceClick();
+        }
+
         selectedPiece = piece;
         validMoves = Board.GetMoves(piece);
 
@@ -227,6 +228,8 @@ public class Game : MonoBehaviour
 
     public void SelectMove(Cell cell)
     {
+        if (validMoves.Count == 0) return;
+
         List<Move> moves = new List<Move>();
 
         // This works but can be better
@@ -275,7 +278,6 @@ public class Game : MonoBehaviour
                     validMoves.Clear();
                 }
                 ChangeTurns();
-                Refresh();
                 break;
             }
         }
@@ -283,12 +285,11 @@ public class Game : MonoBehaviour
 
     public void Deselect()
     {
-        if (selectedPiece != null)
-        {
-            selectedPiece = null;
-        }
-
-        Refresh();
+        selectedCell = null;
+        selectedPiece = null;
+        validMoves.Clear();
+        IndicatorHandler.selector.Hide();
+        IndicatorHandler.Clear();
     }
 
     public void CheckForKing(Piece piece)
