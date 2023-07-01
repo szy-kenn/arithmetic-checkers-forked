@@ -10,9 +10,9 @@ public class Game : MonoBehaviour
     public Settings Settings;
     public Board Board;
     public Scoreboard Scoreboard;
+    public Rules Rules;
     public Cheats Cheats;
-    public Indicators Indicators;
-    public List<GameObject> indicators;
+    public IndicatorHandler IndicatorHandler;
     
     [Header("Match")]
     public List<Player> players = new List<Player>();
@@ -25,6 +25,7 @@ public class Game : MonoBehaviour
     public Side turn = Side.Bot;
     public List<Move> validMoves = new List<Move>();
     public bool TurnRequiresCapture = false;
+    public List<Move> mandatoryMoves = new List<Move>();
     public bool CheatsEnabled = true;
 
     [Header("Prefabs")]
@@ -45,18 +46,12 @@ public class Game : MonoBehaviour
     public event Action onPieceMove;
     public event Action onPieceCapture;
 
-    // Indicators
-    public event Action showAllIndicators;
-    public event Action hideAllIndicators;
-
     // Selection
     public event Action<Cell> moveSelectionIndicator;
-    public event Action<List<Move>> createMoveIndicators;
+    public event Action<List<Move>> createMoveIndicatorHandler;
 
     void Start()
     {
-        // These shouldn't be here, for testing only
-
         Init();
     }
 
@@ -71,6 +66,7 @@ public class Game : MonoBehaviour
         Board = CreateBoard(); 
         Scoreboard.Init();
         if (CheatsEnabled) Cheats.Init();
+        Rules = new Rules();
 
         IsPlaying = true;
         turnNumber = 1;
@@ -79,9 +75,9 @@ public class Game : MonoBehaviour
 
     public void ChangeTurns()
     {
-        Debug.Log($"Changed turns");
+        Debug.Log($"[GAME]: Changed turns");
+
         CheckForKing(selectedPiece);
-        Refresh();
 
         if (turn == Side.Bot)
         {
@@ -90,8 +86,20 @@ public class Game : MonoBehaviour
         {
             turn = Side.Bot;
         }
-
         turnNumber++;
+
+        if (Rules.EnableMandatoryCapture)
+        {
+            if (validMoves.Count != 0)
+            {
+                foreach (var m in validMoves)
+                {
+                    IndicatorHandler.Create(IndicatorType.Box, m.originCell, new Color(0.25f, 0.75f, 0.42f), true);
+                }
+            }
+        }
+
+        Refresh();
     }
 
     public Board CreateBoard()
@@ -104,7 +112,7 @@ public class Game : MonoBehaviour
 
     public Board CreateBoard(Map map)
     {
-        Debug.Log("Board created with map");
+        Debug.Log("[DEBUG]: Board created with map");
         var newBoard = Instantiate(_boardPrefab, new Vector3(0, 0, 0), Quaternion.identity);
         newBoard.transform.SetParent(transform);
         newBoard.Map = map;
@@ -128,37 +136,21 @@ public class Game : MonoBehaviour
     public void Refresh()
     {
         Debug.Log($"Refreshed");
-        selectedCell = null;
-        selectedPiece = null;
-        validMoves.Clear();
-        Indicators.Selector.Hide();
-        Indicators.Clear();
-
-        if (CheatsEnabled)
-        {
-            Cheats.pieceMenu.Close();
-            Cheats.toolsMenu.Close();
-        }
-
         if (refresh != null)
         {
             refresh();
         }
-    }
 
-    public void ShowIndicators()
-    {
-        if (showAllIndicators != null)
-        {
-            showAllIndicators();
-        }
-    }
+        selectedCell = null;
+        selectedPiece = null;
+        validMoves.Clear();
+        IndicatorHandler.selector.Hide();
+        IndicatorHandler.Clear();
 
-    public void HideIndicators()
-    {
-        if (hideAllIndicators != null)
+        if (CheatsEnabled)
         {
-            hideAllIndicators();
+            if (Cheats.pieceMenu != null) Cheats.pieceMenu.Close();
+            if (Cheats.toolsMenu != null) Cheats.toolsMenu.Close();
         }
     }
 
@@ -169,7 +161,7 @@ public class Game : MonoBehaviour
             if (player.side != turn) return;
         }    
 
-        Debug.Log($"[DEBUG]: {player} clicked on {cell}");
+        // Debug.Log($"[DEBUG]: {player} clicked on {cell}");
         if (onCellClick != null)
         {
             onCellClick();
@@ -181,6 +173,7 @@ public class Game : MonoBehaviour
         if (cell.piece != null)
         {   
             if (player.side != cell.piece.side) return;
+
             if (onPieceClick != null)
             {
                 onPieceClick();
@@ -194,7 +187,7 @@ public class Game : MonoBehaviour
 
             if (TurnRequiresCapture)
             {
-                if (cell.piece.HasCapture)
+                if (cell.piece.CanCapture)
                 {
                     SelectPiece(selectedCell.piece);
                 }
@@ -208,6 +201,9 @@ public class Game : MonoBehaviour
             {
                 if (selectedPiece == null) return;
                 SelectMove(selectedCell);
+            } else
+            {
+                Refresh();
             }
         }
     }
@@ -217,52 +213,72 @@ public class Game : MonoBehaviour
         selectedPiece = piece;
         validMoves = Board.GetMoves(piece);
 
-        Indicators.Clear();
+        IndicatorHandler.Clear();
 
         if (validMoves.Count != 0)
         {
-            Indicators.Selector.Move(selectedCell);
+            IndicatorHandler.selector.Move(selectedCell);
             foreach (Move move in validMoves)
             {
-                Debug.Log($"Possible move: {move.destinationCell}");
-                Indicators.Create(IndicatorType.Move, move.destinationCell);
+                IndicatorHandler.Create(IndicatorType.Circle, move.destinationCell, Color.yellow);
             }
         }
     }
 
     public void SelectMove(Cell cell)
     {
+        List<Move> moves = new List<Move>();
+
+        // This works but can be better
         foreach (Move move in validMoves)
         {
             if (cell == move.destinationCell)
             {
+                Debug.Log($"[ACTION]: Moved {selectedPiece}: ({move.originCell.col}, {move.originCell.row}) -> ({move.destinationCell.col}, {move.destinationCell.row})");
                 if (onPieceMove != null)
                 {
                     onPieceMove();
                 }
 
                 Board.MovePiece(selectedPiece, cell);
-                Debug.Log($"{move.HasCapture}");
-                Debug.Log($"{move.capturedPiece}");
 
                 if (move.HasCapture)
                 {
+                    Debug.Log($"[ACTION]: {move.capturingPiece} captured {move.capturedPiece}");
                     if (onPieceCapture != null)
                     {
                         onPieceCapture();
                     }
-                    Debug.Log($"Captured {move.capturedPiece}");
-                    Board.Capture(move.capturedPiece);
+
+                    Board.Capture(move);
                     Scoreboard.Compute(move);
+                    IndicatorHandler.ClearAll();
+
+                    // Check for chain captures
+                    moves = Board.CheckForCaptures(selectedPiece);
+                    if (moves.Count != 0) 
+                    {
+                        TurnRequiresCapture = true;
+                        validMoves = moves;
+                        break;
+                    }
+                }
+                // Check if moved piece is able to be captured
+                moves = Board.CheckIfCaptureable(selectedPiece);
+                if (moves.Count != 0)
+                {
+                    TurnRequiresCapture = true;
+                    validMoves = moves;
+                } else
+                {
+                    TurnRequiresCapture = false;
+                    validMoves.Clear();
                 }
                 ChangeTurns();
+                Refresh();
                 break;
-            } else
-            {
-                continue;
             }
         }
-        Refresh();
     }
 
     public void Deselect()

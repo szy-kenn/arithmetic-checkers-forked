@@ -8,8 +8,8 @@ using UnityEngine.Events;
 
 public class Cheats : MonoBehaviour
 {
-    public Window pieceMenu;
-    public Window toolsMenu;
+    public Window pieceMenu = null;
+    public Window toolsMenu = null;
     public Cell selectedCell;
     public bool EnableDebug = true;
 
@@ -82,8 +82,14 @@ public class Cheats : MonoBehaviour
     public void CreatePieceMenu()
     {
         if (toolsMenu != null) toolsMenu.Close();
-        if (pieceMenu != null) Destroy(pieceMenu.gameObject);
-        pieceMenu = UIHandler.Main.CreateWindow();
+        if (pieceMenu != null)
+        {
+            Destroy(pieceMenu.gameObject);
+            pieceMenu = UIHandler.Main.CreateWindow();
+        } else
+        {
+            pieceMenu = UIHandler.Main.CreateWindow();
+        }
 
         if (selectedCell.piece == null)
         {
@@ -106,8 +112,14 @@ public class Cheats : MonoBehaviour
     public void CreateToolsMenu()
     {
         if (pieceMenu != null) pieceMenu.Close();
-        if (toolsMenu != null) Destroy(toolsMenu.gameObject);
-        toolsMenu = UIHandler.Main.CreateWindow();
+        if (toolsMenu != null)
+        {
+            Destroy(toolsMenu.gameObject);
+            toolsMenu = UIHandler.Main.CreateWindow();
+        } else
+        {
+            toolsMenu = UIHandler.Main.CreateWindow();
+        }
 
         if (EnableDebug)
         {

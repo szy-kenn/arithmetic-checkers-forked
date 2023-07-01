@@ -17,9 +17,8 @@ public class Piece : MonoBehaviour
     public Side side;
     public Color color;
     public bool IsKing = false;
-    public bool HasSkipped = false;
     public bool CanCapture = false;
-    public bool HasCapture = false;
+    public bool HasCaptured = false;
     public int forward = 0;
     public List<Move> moves = new List<Move>();
     public List<Sprite> sprites;
@@ -123,12 +122,13 @@ public class Piece : MonoBehaviour
     {
         IsKing = true;
         overlay.sprite = sprites[1];
-        textValue.color = new Color(0, 0, 0, 1);
+        textValue.color = new Color(1, 1, 1, 1);
     }
 
     public void Demote()
     {
         IsKing = false;
         overlay.sprite = sprites[0];
+        textValue.color = new Color(0, 0, 0, 1);
     }
 }

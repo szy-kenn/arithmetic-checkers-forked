@@ -25,12 +25,12 @@ public class Move
         destinationCell = destination;
     }
     
-    public Move(Cell origin, Cell destination, Piece captureable)
+    public Move(Cell origin, Cell destination, Piece toCapture)
     {
         originCell = origin;
         destinationCell = destination;
         capturingPiece = origin.piece;
-        capturedPiece = captureable;
+        capturedPiece = toCapture;
         HasCapture = true;
     }
 }

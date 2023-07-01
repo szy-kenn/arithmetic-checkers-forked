@@ -114,15 +114,6 @@ public class Board : MonoBehaviour
 
     public List<Move> GetMoves(Piece piece, MoveType moveType=MoveType.All)
     {
-        if (!piece.IsKing)
-        {
-            return GetPawnMoves(piece, moveType);
-        }
-        return GetKingMoves(piece);
-    }
-
-    public List<Move> GetPawnMoves(Piece piece, MoveType moveType)
-    {
         List<Move> moves = new List<Move>();
         int up = 1;
         int down = -1;
@@ -150,101 +141,150 @@ public class Board : MonoBehaviour
         return moves;
     }
 
-    List<Move> CheckLeft(Piece piece, int startingRow, int direction, MoveType type, bool IsKing=false)
+    List<Move> CheckLeft(Piece piece, int startingRow, int direction, MoveType moveType, bool IsKing=false)
     {
         List<Move> moves = new List<Move>();
+        List<Move> captureMoves = new List<Move>();
+        Cell cellToCapture = null;
         int nextEnemyPiece = 0;
-        Cell capturedCell = null;
         int left = piece.col - 1;
 
         for (int row = startingRow ; row < maximumRows ; row += direction)
         {
+            if (left < 0 || left > 7) break;
+            if (row < 0 || row > 7) break;
             if (nextEnemyPiece > 1) break;
-            if (left < 0) break;
 
             Cell cellToCheck = GetCell(left, row);
 
-            if (cellToCheck.piece == null)  // Cell has no piece
+            if (cellToCheck.piece == null)  // Next cell is empty cell
             {
-                if (piece.forward != direction)
+                if (cellToCapture != null)  // There's a captureable cell
                 {
-                    if (!IsKing)
-                    {
-                        if (nextEnemyPiece < 1) break;
-                    }
-                }
-
-                if (nextEnemyPiece > 0)
-                {
-                    moves.Add(new Move(GetCell(piece.col, piece.row), cellToCheck, capturedCell.piece));
+                    piece.CanCapture = true;
+                    captureMoves.Add(new Move(GetCell(piece.col, piece.row), cellToCheck, cellToCapture.piece));
                 } else
                 {
+                    if (piece.forward != direction)
+                    {
+                        if (!IsKing) break;
+                    }
                     moves.Add(new Move(GetCell(piece.col, piece.row), cellToCheck));
                 }
-                if (!IsKing) break;
-            } else if (cellToCheck.piece.side == piece.side) // Allied piece
+
+                if (!piece.IsKing) break;
+
+            } else if (cellToCheck.piece.side == piece.side)    // Next cell has allied piece
             {
                 break;
-            } else  // Enemy piece
+            } else  // Next cell has enemy piece
             {
                 nextEnemyPiece += 1;
-                capturedCell = cellToCheck;
+                cellToCapture = cellToCheck;
             }
-            left -= 1;
+            left -= 1;  // Move selector diagonally
         }
-        return moves;
+
+        switch (moveType)
+        {
+            case MoveType.Normal:
+                return moves;
+            case MoveType.Capture:
+                return captureMoves;
+            default:
+                moves.AddRange(captureMoves);
+                return moves;
+        }
     }
     
-    List<Move> CheckRight(Piece piece, int startingRow, int direction, MoveType type, bool IsKing=false)
+    List<Move> CheckRight(Piece piece, int startingRow, int direction, MoveType moveType, bool IsKing=false)
     {
         List<Move> moves = new List<Move>();
+        List<Move> captureMoves = new List<Move>();
         int nextEnemyPiece = 0;
-        Cell capturedCell = null;
+        Cell cellToCapture = null;
         int right = piece.col + 1;
 
         for (int row = startingRow; row < maximumRows ; row += direction)
         {
+            if (right < 0 || right > 7) break;
+            if (row < 0 || row > 7) break;
             if (nextEnemyPiece > 1) break;
-            if (right > 7) break;
 
             Cell cellToCheck = GetCell(right, row);
 
-            // Cell is empty
-            if (cellToCheck.piece == null)
+            if (cellToCheck.piece == null)  // Next cell is empty cell
             {
-                if (piece.forward != direction)
+                if (cellToCapture != null)  // There's a captureable cell
                 {
-                    if (!IsKing)
-                    {
-                        if (nextEnemyPiece < 1) break;
-                    }
-                }
-
-                if (nextEnemyPiece > 0)
-                {
-                    moves.Add(new Move(GetCell(piece.col, piece.row), cellToCheck, capturedCell.piece));
+                    piece.CanCapture = true;
+                    captureMoves.Add(new Move(GetCell(piece.col, piece.row), cellToCheck, cellToCapture.piece));
                 } else
                 {
+                    if (piece.forward != direction)
+                    {
+                        if (!IsKing) break;
+                    }
                     moves.Add(new Move(GetCell(piece.col, piece.row), cellToCheck));
                 }
-                if (!IsKing) break;
-            } else if (cellToCheck.piece.side == piece.side) // Allied piece
+
+                if (!piece.IsKing) break;
+
+            } else if (cellToCheck.piece.side == piece.side)    // Next cell has allied piece
             {
                 break;
-            } else  // Enemy piece
+            } else  // Next cell has enemy piece
             {
                 nextEnemyPiece += 1;
-                capturedCell = cellToCheck;
+                cellToCapture = cellToCheck;
             }
-            right += 1;
+            right += 1;  // Move selector diagonally
         }
-        return moves;
+
+        switch (moveType)
+        {
+            case MoveType.Normal:
+                return moves;
+            case MoveType.Capture:
+                return captureMoves;
+            default:
+                moves.AddRange(captureMoves);
+                return moves;
+        }
+    }
+    
+    /// <summary>
+    /// This checks for the possible captures of the piece.
+    /// Returns all the moves with captures.
+    /// </summary>
+    public List<Move> CheckForCaptures(Piece piece)
+    {
+        return GetMoves(piece, MoveType.Capture);
     }
 
-    public List<Move> GetKingMoves(Piece piece)
+    /// <summary>
+    /// This checks only the 4 surrounding cells of the given piece (SE, SW, NE, NW).
+    /// Returns all found moves with captures.
+    /// </summary>
+    public List<Move> CheckIfCaptureable(Piece piece)
     {
-        
-        return new List<Move>();
+        List<Move> moves = new List<Move>();
+
+        for (int col = piece.col - 1 ;  col < piece.col + 2 ; col += 2)
+        {
+            if (col < 0 || col > 7) continue;
+            for (int row = piece.row - 1 ;  row < piece.row + 2 ; row += 2)
+            {
+                if (row < 0 || row > 7) continue;
+                Cell cellToCheck = GetCell(col, row);
+
+                if (cellToCheck.piece != null)
+                {
+                    moves.AddRange(GetMoves(cellToCheck.piece, MoveType.Capture));
+                }
+            }
+        }
+        return moves;
     }
 
     public Cell GetCell(int col, int row)
@@ -262,6 +302,9 @@ public class Board : MonoBehaviour
         return cellMap;
     }
 
+    /// <summary>
+    /// Physically move the piece to destination cell.
+    /// </summary>
     public void MovePiece(Piece piece, Cell destinationCell)
     {
         Cell originCell = GetCell(piece);
@@ -276,27 +319,32 @@ public class Board : MonoBehaviour
         LeanTween.move(destinationCell.piece.gameObject, destinationCell.transform.position, 0.5f).setEaseOutExpo();
     }
 
-    public void Capture(Piece piece)
+    public void Capture(Move move)
     {
-        // Captured piece
-        if (piece.side == Side.Bot)
+        Piece capturedPiece = move.capturedPiece;
+
+        if (capturedPiece.side == Side.Bot)
         {
-            piece.gameObject.transform.SetParent(graveyardT.transform);
-            RectTransform rect = piece.GetComponent<RectTransform>();
+            RectTransform rect = capturedPiece.GetComponent<RectTransform>();
+
+            capturedPiece.gameObject.transform.SetParent(graveyardT.transform);
             rect.anchorMin = new Vector2(0.5f, 1f);
             rect.anchorMax = new Vector2(0.5f, 1f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            LeanTween.move(piece.gameObject, graveyardT.transform.position, 0.5f).setEaseOutExpo();
+
+            LeanTween.move(capturedPiece.gameObject, graveyardT.transform.position, 0.5f).setEaseOutExpo();
         } else
         {
-            piece.gameObject.transform.SetParent(graveyardB.transform);
-            RectTransform rect = piece.GetComponent<RectTransform>();
+            RectTransform rect = capturedPiece.GetComponent<RectTransform>();
+
+            capturedPiece.gameObject.transform.SetParent(graveyardB.transform);
             rect.anchorMin = new Vector2(0.5f, 0f);
             rect.anchorMax = new Vector2(0.5f, 0f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            LeanTween.move(piece.gameObject, graveyardB.transform.position, 0.5f).setEaseOutExpo();
+
+            LeanTween.move(capturedPiece.gameObject, graveyardB.transform.position, 0.5f).setEaseOutExpo();
         }
 
-        GetCell(piece).RemovePiece();
+        GetCell(capturedPiece).RemovePiece();
+        move.capturingPiece.HasCaptured = true;
+        move.capturingPiece.CanCapture = false;
     }
 }
