@@ -5,131 +5,146 @@ using UnityEditor;
 using TMPro;
 using System;
 
-public enum Side {Bot, Top}
-
-public class Piece : MonoBehaviour
+namespace Damath
 {
-    public Player owner = null;
-    public Cell cell;
-    public int col, row;
-    public Vector3 position;
-    public string value;
-    public Side side;
-    public Color color;
-    public bool IsKing = false;
-    public bool CanCapture = false;
-    public bool HasCaptured = false;
-    public int forward = 0;
-    public List<Move> moves = new List<Move>();
-    public List<Sprite> sprites;
+    public enum Side {Bot, Top, Spectator}
 
-    RectTransform rect;
-    TextMeshPro textValue;
-    SpriteRenderer overlay;
-
-    public Piece(Side side, Color color, string value, bool IsKing)
+    public class Piece : MonoBehaviour
     {
-        this.side = side;
-        this.color = color;
-        this.value = value;
-        this.IsKing = IsKing;
-    }
+        public Player owner = null;
+        public Cell cell;
+        public int col, row;
+        public Vector3 position;
+        public string value;
+        public Side side;
+        public Color color;
+        public Color shadow;
+        public bool IsKing = false;
+        public bool CanCapture = false;
+        public bool HasCaptured = false;
+        public int forward = 0;
+        public List<Move> moves = new List<Move>();
+        public List<Sprite> sprites;
 
-    public List<Move> GetMoves(Piece piece)
-    {
-        return new List<Move>();
-    }
+        RectTransform rect;
+        TextMeshPro textValue;
+        SpriteRenderer overlayTop;
+        SpriteRenderer overlayShadow;
 
-    void Awake()
-    {
-        rect = GetComponent<RectTransform>();
-        textValue = transform.Find("Text").GetComponent<TextMeshPro>();
-        overlay = transform.Find("Overlay").GetComponent<SpriteRenderer>();
-    }
-    
-    void Start()
-    {
-        textValue.text = value;
-
-        if (IsKing)
+        public Piece(Side side, Color color, string value, bool IsKing)
         {
-            overlay.sprite = sprites[1];
-        } else
-        {
-            overlay.sprite = sprites[0];
+            this.side = side;
+            this.color = color;
+            this.value = value;
+            this.IsKing = IsKing;
         }
-    }
 
-    public void SetCell(Cell cell)
-    {
-        this.cell = cell;
-        this.col = cell.col;
-        this.row = cell.row;
-    }
-
-    public void SetValue(string value)
-    {
-        this.value = value;
-        textValue.text = value;
-    }
-
-    public void SetTeam(Side value)
-    {
-        side = value;
-
-        if (value == Side.Bot)
+        public List<Move> GetMoves(Piece piece)
         {
-            forward = 1;
-            SetOwner(Game.Main.players[0]);
-        } else
-        {
-            forward = -1;
-            SetOwner(Game.Main.players[1]);
+            return new List<Move>();
         }
-        owner.pieceCount += 1;
-    }
 
-    public void SetOwner(Player player)
-    {
-        owner = player;
-    }
+        void Awake()
+        {
+            rect = GetComponent<RectTransform>();
+            textValue = transform.Find("Text").GetComponent<TextMeshPro>();
+            overlayTop = transform.Find("Overlay Top").GetComponent<SpriteRenderer>();
+            overlayShadow = transform.Find("Overlay Shadow").GetComponent<SpriteRenderer>();
+        }
+        
+        void Start()
+        {
+            textValue.text = value;
 
-    public void SetColor(Color value)
-    {
-        overlay.color = value;
-    }
+            if (IsKing)
+            {
+                overlayTop.sprite = sprites[1];
+            } else
+            {
+                overlayTop.sprite = sprites[0];
+            }
+        }
 
-    public void SetKing(bool value)
-    {
-        IsKing = value;
-    }
+        public void SetCell(Cell cell)
+        {
+            this.cell = cell;
+            this.col = cell.col;
+            this.row = cell.row;
+        }
 
-    public void AddMove(Move value)
-    {
-        moves.Add(value);
-    }
+        public void SetValue(string value)
+        {
+            this.value = value;
+            textValue.SetText(value);
+        }
 
-    public void ClearMoves()
-    {
-        moves.Clear();
-    }
+        public void SetTeam(Side value)
+        {
+            side = value;
 
-    public void Remove()
-    {
-        Destroy(this.gameObject);
-    }
+            if (value == Side.Bot)
+            {
+                forward = 1;
+                // SetOwner(Game.Main.Match.players[0]);
+            } else
+            {
+                forward = -1;
+                // SetOwner(Game.Main.Match.players[1]);
+            }
+            owner.pieceCount += 1;
+        }
 
-    public void Promote()
-    {
-        IsKing = true;
-        overlay.sprite = sprites[1];
-        textValue.color = new Color(1, 1, 1, 1);
-    }
+        public void SetOwner(Player player)
+        {
+            owner = player;
+        }
 
-    public void Demote()
-    {
-        IsKing = false;
-        overlay.sprite = sprites[0];
-        textValue.color = new Color(0, 0, 0, 1);
+        public void SetKing(bool value)
+        {
+            if (value)
+            {
+                Promote();
+            } else
+            {
+                Demote();
+            }
+        }
+        
+        public void Promote()
+        {
+            if (IsKing) return;
+            IsKing = true;
+            overlayTop.sprite = sprites[1];
+            textValue.color = new Color(1, 1, 1, 1);
+        }
+
+        public void Demote()
+        {
+            if (!IsKing) return;
+            IsKing = false;
+            overlayTop.sprite = sprites[0];
+            textValue.color = new Color(0, 0, 0, 1);
+        }
+
+        public void SetColor(Color top)
+        {
+            overlayTop.color = top;
+        }
+        
+        public void SetColor(Color top, Color shadow)
+        {
+            overlayTop.color = top;
+            overlayShadow.color = shadow;
+        }
+
+        public void Capture()
+        {
+
+        }
+
+        public void Remove()
+        {
+            Destroy(this.gameObject);
+        }
     }
 }

@@ -2,45 +2,47 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Indicator : MonoBehaviour
+namespace Damath
 {
-    public Color color;
-    public Sprite sprite;
-    public bool ForceDisplay = false;
-    public RectTransform c_rect;
-    public Sprite c_sprite;
-    public SpriteRenderer c_spriteRenderer;
-
-    void Awake()
+    public class Indicator : MonoBehaviour
     {
-        c_rect = GetComponent<RectTransform>();
-        c_sprite = GetComponent<Sprite>();
-        c_spriteRenderer = GetComponent<SpriteRenderer>();
-    }
+        public Color Color;
+        public Sprite Sprite;
+        public bool ForceDisplay = false;
+        public RectTransform rectTransform;
+        public SpriteRenderer spriteRenderer;
 
-    public void Show()
-    {
-        gameObject.SetActive(true);
-    }
+        void Awake()
+        {
+            Sprite = GetComponent<Sprite>();
+            rectTransform = GetComponent<RectTransform>();
+            spriteRenderer = GetComponent<SpriteRenderer>();
+        }
 
-    public void Hide()
-    {
-        gameObject.SetActive(false);
-    }
+        public void Show()
+        {
+            gameObject.SetActive(true);
+        }
 
-    public void Move(Cell cell)
-    {
-        gameObject.SetActive(true);
-        transform.position = cell.transform.position;
-    }
+        public void Hide()
+        {
+            gameObject.SetActive(false);
+        }
 
-    public void Delete()
-    {
-        Destroy(this);
-    }
+        public void Move(Cell cell)
+        {
+            gameObject.SetActive(true);
+            this.transform.position = cell.transform.position;
+        }
 
-    public void SetColor(Color value)
-    {
-        c_spriteRenderer.color = value;
+        public void Delete()
+        {
+            Destroy(this);
+        }
+
+        public void SetColor(Color value)
+        {
+            spriteRenderer.color = value;
+        }
     }
 }

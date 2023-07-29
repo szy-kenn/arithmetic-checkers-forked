@@ -1,96 +1,114 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Player : MonoBehaviour
+namespace Damath
 {
-    public string playerName = "Player";
-    public Side side;
-    public int pieceCount = 0;
-    public float score = 0f;
-    public bool IsModerator = false;
-    public bool IsPlaying = false;
-    public Cell selectedCell = null;
-    
-    [SerializeField] GameObject _playerPrefab;
-
-    void Start()
+    public class Player : MonoBehaviour
     {
-        this.name = $"Player ({playerName})";
-    }
+        public string playerName = "Player";
+        public Side side;
+        public int pieceCount = 0;
+        public float score = 0f;
+        public bool IsPlaying = false;
+        public bool IsModerator = false;
+        public bool IsAI = false;
+        public Cell selectedCell = null;
+        public Match Match = null;
 
-    void Update()
-    {
-        DetectRaycast();
-    }
-
-    public Player Create(Side side, string playerName=null)
-    {
-        var newPlayer = Instantiate(_playerPrefab, new Vector3(0, 0, 0), Quaternion.identity);
-        newPlayer.transform.SetParent(transform);
-        Player c_player = newPlayer.GetComponent<Player>();
-
-        c_player.side = side;
-        if (name != null) c_player.playerName = name;
-
-        return c_player;
-    }
-
-    void DetectRaycast()
-    {
-        if (Input.GetMouseButtonDown(0))
+        void Start()
         {
-            RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
-            if (hit.collider == null) return;
-
-            Click(hit);
+            this.name = $"Player ({playerName})";
         }
 
-        if (Input.GetMouseButtonDown(1))
+        void Update()
         {
-            RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
-            if (hit.collider == null) return;
-            if (!IsModerator)
+            DetectRaycast();
+        }
+
+        public string SetName(string value)
+        {
+            this.name = $"Player {value}";
+            this.playerName = name;
+            return value;
+        }
+
+        public bool SetPlaying(bool value)
+        {
+            this.IsPlaying = value;
+            return value;
+        }
+
+        public Side SetSide(Side value)
+        {
+            this.side = value;
+            return value;
+        }
+
+        public void SetScore(float value)
+        {
+            this.score = value;
+        }
+
+        void DetectRaycast()
+        {
+            if (!IsPlaying) return;
+
+            if (Input.GetMouseButtonDown(0))
             {
+                Game.Events.PlayerClick(this);
+                RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+                if (hit.collider == null) return;
+
                 Click(hit);
-                return;
             }
 
-            switch (hit.collider.tag)
+            if (Input.GetMouseButtonDown(1))
             {
-                case "Cell":
-                    selectedCell = hit.collider.gameObject.GetComponent<Cell>();
+                Game.Events.PlayerClick(this);
+                RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+                if (hit.collider == null) return;
+                if (!IsModerator)
+                {
+                    Click(hit);
+                    return;
+                }
 
-                    if (Game.Main.CheatsEnabled)
-                    {
-                        Game.Main.Cheats.Select(selectedCell); 
-                        Game.Main.Cheats.CreatePieceMenu();
-                    }
-                    break;
+                // switch (hit.collider.tag)
+                // {
+                //     case "Cell":
+                //         selectedCell = hit.collider.gameObject.GetComponent<Cell>();
 
-                case "Background":
-                    Game.Main.Cheats.CreateToolsMenu(); 
-                    break;
+                //         if (Game.Main.Match.Rules.EnableCheats)
+                //         {
+                //             Game.Main.Match.Cheats.Select(selectedCell); 
+                //             Game.Main.Match.Cheats.CreatePieceMenu();
+                //         }
+                //         break;
 
-                default:
-                    break;
+                //     case "Background":
+                //         Game.Main.Match.Cheats.CreateToolsMenu(); 
+                //         break;
+
+                //     default:
+                //         break;
+                // }
             }
         }
-    }
 
-    public void Click(RaycastHit2D hit)
-    {
-        if (hit.collider.tag == "Cell")
+        public void Click(RaycastHit2D hit)
         {
-            selectedCell = hit.collider.gameObject.GetComponent<Cell>();
+            Game.Events.PlayerSelect(this);
 
-            Game.Main.Select(this, selectedCell);
-        } else
-        {
-            Game.Main.Refresh();
+            if (hit.collider.tag == "Cell")
+            {
+                selectedCell = hit.collider.gameObject.GetComponent<Cell>();
+
+                Game.Events.CellSelect(selectedCell);
+            }
+            // Add more else-if statements to add more components that can be detected by the Raycast
+            // Make sure to include every game objects with tags to avoid getting not detected
         }
-        //add more else-if statements to add more components that can be detected by the Raycast
-        //Make sure to include every game objects with tags to avoid getting not detected
-        return;
     }
 }

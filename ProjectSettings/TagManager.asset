@@ -59,3 +59,6 @@ TagManager:
   - name: Chips
     uniqueID: 3827396539
     locked: 0
+  - name: Windows
+    uniqueID: 4017613001
+    locked: 0

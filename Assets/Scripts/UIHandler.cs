@@ -5,25 +5,62 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using TMPro;
 
-public class UIHandler : MonoBehaviour
+namespace Damath
 {
-    public static UIHandler Main;
-    public List<Sprite> icons;
-    public GameObject windowPrefab;
-    public GameObject choicePrefab;
-
-    void Awake()
+    public class UIHandler : MonoBehaviour
     {
-        Main = this;
-    }
+        public static UIHandler Main;
+        public List<Sprite> icons;
+        public Dictionary<string, Sprite> dicons = new Dictionary<string, Sprite>();
 
-    /// <summary>
-    /// Creates an empty window.
-    /// </summary>
-    public Window CreateWindow()
-    {
-        var newWindow = Instantiate(windowPrefab);
-        newWindow.transform.SetParent(transform);
-        return newWindow.GetComponent<Window>();
+        [Header("Elements")]
+        public GameObject Sidebar;
+        public GameObject Title;
+        public GameObject GlobalTimer;
+        public ScoreboardUI ScoreboardUI;
+        public GameObject MessageBox;
+        
+        [Header("Prefabs")]
+        public GameObject windowPrefab;
+        public GameObject choicePrefab;
+
+        void Awake()
+        {
+            Main = this;
+
+            Sidebar = transform.Find("Sidebar").gameObject;
+            GlobalTimer = Sidebar.transform.Find("Global Timer (UI)").gameObject;
+            ScoreboardUI = Sidebar.transform.Find("Scoreboard (UI)").GetComponent<ScoreboardUI>();
+        }
+
+        public void PlayTransition()
+        {
+            
+        }
+
+        public void AddIcon(string name, Sprite sprite)
+        {
+            dicons.Add(name, sprite);
+        }
+
+        /// <summary>
+        /// Creates an empty window.
+        /// </summary>
+        public Window CreateWindow()
+        {
+            var newWindow = Instantiate(windowPrefab);
+            newWindow.transform.SetParent(transform);
+            return newWindow.GetComponent<Window>();
+        }
+        
+        /// <summary>
+        /// Creates a window given a window prefab.
+        /// </summary>
+        public Window CreateWindow(GameObject prefab)
+        {
+            var newWindow = Instantiate(prefab);
+            newWindow.transform.SetParent(transform);
+            return newWindow.GetComponent<Window>();
+        }
     }
 }
