@@ -276,7 +276,7 @@ namespace Damath
             {
                 if (int.TryParse(args[1], out int page))
                 {
-                    page = page;
+                    // page = page;
                 } else
                 {
                     Debug.Log(Commands[args[0]].Description);
