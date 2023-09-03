@@ -10,6 +10,7 @@ namespace Damath
     public class UIHandler : MonoBehaviour
     {
         public static UIHandler Main;
+        [SerializeField] Canvas Canvas;
         public List<Sprite> icons;
         public Dictionary<string, Sprite> dicons = new Dictionary<string, Sprite>();
 
@@ -27,10 +28,11 @@ namespace Damath
         void Awake()
         {
             Main = this;
+        }
 
-            Sidebar = transform.Find("Sidebar").gameObject;
-            GlobalTimer = Sidebar.transform.Find("Global Timer (UI)").gameObject;
-            ScoreboardUI = Sidebar.transform.Find("Scoreboard (UI)").GetComponent<ScoreboardUI>();
+        void Start()
+        {
+            
         }
 
         public void PlayTransition()
@@ -49,7 +51,7 @@ namespace Damath
         public Window CreateWindow()
         {
             var newWindow = Instantiate(windowPrefab);
-            newWindow.transform.SetParent(transform);
+            newWindow.transform.SetParent(Canvas.transform);
             return newWindow.GetComponent<Window>();
         }
         
@@ -59,7 +61,7 @@ namespace Damath
         public Window CreateWindow(GameObject prefab)
         {
             var newWindow = Instantiate(prefab);
-            newWindow.transform.SetParent(transform);
+            newWindow.transform.SetParent(Canvas.transform);
             return newWindow.GetComponent<Window>();
         }
     }

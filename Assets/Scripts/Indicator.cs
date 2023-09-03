@@ -1,11 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Damath
 {
     public class Indicator : MonoBehaviour
     {
+        public int Col;
+        public int Row;
         public Color Color;
         public Sprite Sprite;
         public bool ForceDisplay = false;
@@ -29,10 +32,11 @@ namespace Damath
             gameObject.SetActive(false);
         }
 
-        public void Move(Cell cell)
+        public void Move(Cell cell, bool show = false)
         {
-            gameObject.SetActive(true);
-            this.transform.position = cell.transform.position;
+            if (show) gameObject.SetActive(true);
+            (Col, Row) = (cell.col, cell.row);
+            transform.position = cell.transform.position;
         }
 
         public void Delete()

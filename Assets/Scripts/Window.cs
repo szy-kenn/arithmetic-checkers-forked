@@ -44,6 +44,20 @@ namespace Damath
             }
         }
 
+        /// <summary>
+        /// Toggles window visibility.
+        /// </summary>
+        public void Toggle()
+        {
+            if (IsVisible)
+            {
+                Close();
+            } else
+            {
+                Open();
+            }
+        }
+
         public void Open()
         {
             IsVisible = true;

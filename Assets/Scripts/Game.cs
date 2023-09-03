@@ -13,6 +13,9 @@ namespace Damath
     {
         public static Game Main { get; private set; }
         public static EventManager Events { get; private set; }
+        public static Console Console { get; private set; }
+        public static UIHandler UI { get; private set; }
+        public static AudioManager Audio { get; private set; }
         protected bool IsAlive;
         public bool IsPaused;
         public bool HasMatch { get; private set; }
@@ -26,13 +29,24 @@ namespace Damath
             } else
             {
                 Main = this;
-                Events = this.GetComponent<EventManager>();
+                Events = GetComponentInChildren<EventManager>();
+                Console = GetComponentInChildren<Console>();
+                UI = GetComponentInChildren<UIHandler>();
+                Audio = GetComponentInChildren<AudioManager>();
             }
         }
 
         void Start()
         {
             IsAlive = true;
+
+            // Initialize event manager
+
+            if (Settings.EnableConsole)
+            {
+                Console.Enable();
+            }
+            // Initialize console
         }
         
         public void Pause(bool value)

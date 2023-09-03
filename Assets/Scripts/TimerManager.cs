@@ -8,6 +8,7 @@ namespace Damath
 {
     public class TimerManager : MonoBehaviour
     {
+        public Ruleset Rules { get; private set; }
         public List<Timer> activeTimers = new List<Timer>();
         public List<Timer> inactiveTimers = new List<Timer>();
         public Timer globalTimer;
@@ -20,19 +21,19 @@ namespace Damath
 
         void Awake()
         {
-            globalTimerTMP = UIHandler.Main.GlobalTimer.GetComponent<TextMeshProUGUI>();
-            blueTimerTMP = UIHandler.Main.ScoreboardUI.turnTimerBlue.GetComponent<TextMeshProUGUI>();
-            orangeTimerTMP = UIHandler.Main.ScoreboardUI.turnTimerOrange.GetComponent<TextMeshProUGUI>();
+            
         }
 
         void OnEnable()
         {
             Game.Events.OnMatchBegin += Init;
+            Game.Events.OnRulesetReturn += ReceiveRuleset;
         }
 
         void OnDisable()
         {
             Game.Events.OnMatchBegin -= Init;
+            Game.Events.OnRulesetReturn -= ReceiveRuleset;
         }
 
         void Update()
@@ -53,22 +54,27 @@ namespace Damath
             }
         }
         
-        public void Init(Ruleset rules)
+        public void Init(MatchController match)
         {
-            if (rules.EnableTimer) 
+            if (Rules.EnableTimer) 
             {
-                if (rules.EnableGlobalTimer)
+                if (Rules.EnableGlobalTimer)
                 {
-                    InitGlobal(rules.globalTimerSeconds);
+                    InitGlobal(Rules.globalTimerSeconds);
                 }
-                if (rules.EnableTurnTimer)
+                if (Rules.EnableTurnTimer)
                 {
-                    InitTurn(rules.turnTimerSeconds);
+                    InitTurn(Rules.turnTimerSeconds);
                 }
                 StartAll();
             }
         }
-        
+
+        public void ReceiveRuleset(Ruleset rules)
+        {
+            Rules = rules;
+        }
+
         /// <summary>
         /// 
         /// </summary>

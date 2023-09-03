@@ -1,18 +1,25 @@
 using System;
 using System.Collections;
+using System.Diagnostics;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Events;
+using System.Text.RegularExpressions;
 
 namespace Damath
 {
     public class EventManager : MonoBehaviour
     {
+        public bool EnableDebug = false;
+
         #region Global events
 
         public event Action OnMatchCreate;
-        public event Action<Ruleset> OnMatchBegin;
+        public event Action<MatchController> OnMatchBegin;
         public event Action OnMatchEnd;
+        public event Action OnRulesetRequest;
+        public event Action<Ruleset> OnRulesetReturn;
 
         #endregion
 
@@ -20,6 +27,8 @@ namespace Damath
         
         public event Action<Player> OnPlayerCreate;
         public event Action<Player> OnPlayerClick;
+        public event Action<Player> OnPlayerHold;
+        public event Action<Player> OnPlayerRelease;
         public event Action<Player> OnPlayerSelect;
         public event Action<Player> OnPlayerDeselect;
 
@@ -27,13 +36,21 @@ namespace Damath
         
         #region Match events
         public event Action<Cell> OnCellSelect;
+        public event Action<Cell> OnCellDeselect;
+        public event Action<int, int> OnCellRequest;
+        public event Action<Cell> OnCellReturn;
+        public event Action<Cell> OnMoveSelect;
         public event Action<Piece> OnPieceSelect;
-        public event Action<Move> OnMoveSelect;
+        public event Action<Piece> OnPieceWait;
         public event Action<Move> OnPieceMove;
+        public event Action<Piece> OnPieceDone;
         public event Action<Move> OnPieceCapture;
+        public event Action<List<Move>> OnUpdateMoves;
         public event Action<MoveType> OnMoveTypeRequest;
+        public event Action<bool> OnRequireCapture;
         public event Action OnRefresh;
         public event Action<Side> OnChangeTurn;
+        
 
         #endregion
 
@@ -55,20 +72,27 @@ namespace Damath
         /// <summary>
         /// Player click event.
         /// </summary>
-        public void MatchBegin(Ruleset ruleset)
+        public void MatchBegin(MatchController match)
         {
-            if (OnMatchBegin != null)
-            {
-                OnMatchBegin(ruleset);
-            }
+            OnMatchBegin?.Invoke(match);
+        }
+
+        public void RulesetRequest(Ruleset rules)
+        {
+            OnRulesetRequest?.Invoke();
+        }
+
+        public void RulesetReturn(Ruleset rules)
+        {
+            OnRulesetReturn?.Invoke(rules);
         }
 
         #endregion
 
         #region Player event methods
-        
+
         /// <summary>
-        /// Player select event.
+        /// Called when a player selects something.
         /// </summary>
         public void PlayerSelect(Player player)
         {
@@ -79,18 +103,18 @@ namespace Damath
         }
 
         /// <summary>
-        /// Player deselect event.
+        /// Called when player deselects.
         /// </summary>
-        public void PlayerDeselect(Player player)
+        public void PlayerDeselect(Player who)
         {
             if (OnPlayerDeselect != null)
             {
-                OnPlayerDeselect(player);
+                OnPlayerDeselect(who);
             }
         }
 
         /// <summary>
-        /// Player create event.
+        /// Called when a new player is created.
         /// </summary>
         public void PlayerCreate(Player player)
         {
@@ -101,7 +125,7 @@ namespace Damath
         }
 
         /// <summary>
-        /// Player click event.
+        /// Called when player clicks.
         /// </summary>
         public void PlayerClick(Player player)
         {
@@ -111,21 +135,75 @@ namespace Damath
             }
         }
 
+        /// <summary>
+        /// Called when player holds.
+        /// </summary>
+        public void PlayerHold(Player player)
+        {
+            if (OnPlayerHold != null)
+            {
+                OnPlayerHold(player);
+            }
+        }
+
+        /// <summary>
+        /// Called when player releases.
+        /// </summary>
+        public void PlayerRelease(Player player)
+        {
+            if (OnPlayerRelease != null)
+            {
+                OnPlayerRelease(player);
+            }
+        }
+
         #endregion
 
         #region Match event methods
 
         /// <summary>
-        /// Cell select event.
+        /// Called when a cell is selected.
         /// </summary>
-        public void CellSelect(Cell selectedCell)
+        public void CellSelect(Cell cell)
         {
             if (OnCellSelect != null)
             {
-                OnCellSelect(selectedCell);
+                OnCellSelect(cell);
             }
         }
 
+        /// <summary>
+        /// Called when a cell is deselected.
+        /// </summary>
+        public void CellDeselect(Cell cell)
+        {
+            OnCellDeselect?.Invoke(cell);
+        }
+        
+        public void CellRequest(int col, int row)
+        {
+            OnCellRequest?.Invoke(col, row);
+        }
+        
+        public void CellReturn(Cell cell)
+        {
+            OnCellReturn?.Invoke(cell);
+        }
+
+        /// <summary>
+        /// Called when a cell with valid move is selected.
+        /// </summary>
+        public void MoveSelect(Cell cell)
+        {
+            if (OnMoveSelect != null)
+            {
+                OnMoveSelect(cell);
+            }
+        }
+
+        /// <summary>
+        /// Called when a piece is selected.
+        /// </summary>
         public void PieceSelect(Piece piece)
         {
             if (OnPieceSelect != null)
@@ -133,12 +211,48 @@ namespace Damath
                 OnPieceSelect(piece);
             }
         }
-        
-        public void MoveSelect(Move move)
+
+        /// <summary>
+        /// Called when piece is waiting for an action.
+        /// </summary>
+        public void PieceWait(Piece piece)
         {
-            if (OnMoveSelect != null)
+            if (OnPieceWait != null)
             {
-                OnMoveSelect(move);
+                OnPieceWait(piece);
+            }
+        }
+
+        /// <summary>
+        /// Called when a piece is moved.
+        /// </summary>
+        public void PieceMove(Move move)
+        {
+            if (OnPieceMove != null)
+            {
+                OnPieceMove(move);
+            }
+        }
+
+        /// <summary>
+        /// Called when a piece has no more actions to take.
+        /// </summary>
+        public void PieceDone(Piece piece)
+        {
+            if (OnPieceDone != null)
+            {
+                OnPieceDone(piece);
+            }
+        }
+        
+        /// <summary>
+        /// Called when the Board updates all its valid moves.
+        /// </summary>
+        public void UpdateMoves(List<Move> moves)
+        {
+            if (OnUpdateMoves != null)
+            {
+                OnUpdateMoves(moves);
             }
         }
         
@@ -150,19 +264,22 @@ namespace Damath
             }
         }
 
-        public void PieceMove(Move move)
-        {
-            if (OnPieceMove != null)
-            {
-                OnPieceMove(move);
-            }
-        }
-
         public void PieceCapture(Move move)
         {
             if (OnPieceCapture != null)
             {
                 OnPieceCapture(move);
+            }
+        }
+
+        /// <summary>
+        /// Called when the Board requests for a turn that has a mandatory capture.
+        /// </summary>
+        public void RequireCapture(bool value)
+        {
+            if (OnRequireCapture != null)
+            {
+                OnRequireCapture(value);
             }
         }
 

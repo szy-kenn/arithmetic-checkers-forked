@@ -8,9 +8,11 @@ namespace Damath
 
     public class IndicatorHandler : MonoBehaviour
     {
+        public Ruleset Rules { get; private set; }
         public Indicator Selector = null;
-        public List<Indicator> active = new List<Indicator>();
-        public List<Indicator> forced = new List<Indicator>();
+        public List<Indicator> Active = new List<Indicator>();
+        public List<Indicator> Forced = new List<Indicator>();
+        public List<Move> ValidMoves = new List<Move>();
 
         [Header("Prefabs")]
         [SerializeField] GameObject _selectorPrefab;
@@ -20,20 +22,42 @@ namespace Damath
         void OnEnable()
         {
             Game.Events.OnMatchBegin += Init;
+            Game.Events.OnRulesetReturn += ReceiveRuleset;
             Game.Events.OnCellSelect += MoveSelector;
-            Game.Events.OnRefresh += Hide;
+            Game.Events.OnCellDeselect += Refresh;
+            Game.Events.OnPieceSelect += ShowSelector;
+            Game.Events.OnPieceSelect += Clear;
+            Game.Events.OnPieceWait += IndicateValidMoves;
+            Game.Events.OnPieceDone += ClearAll;
+            Game.Events.OnRequireCapture += IndicateCapturingPieces;
+            Game.Events.OnUpdateMoves += UpdateValidMoves;
+            Game.Events.OnRefresh += ClearAll;
+            Game.Events.OnChangeTurn += IndicateCapturingPieces;
         }
-        void OnDisnable()
+        void OnDisable()
         {
             Game.Events.OnMatchBegin -= Init;
+            Game.Events.OnRulesetReturn -= ReceiveRuleset;
             Game.Events.OnCellSelect -= MoveSelector;
-            Game.Events.OnRefresh -= Hide;
+            Game.Events.OnCellDeselect -= Refresh;
+            Game.Events.OnPieceSelect -= ShowSelector;
+            Game.Events.OnPieceSelect -= Clear;
+            Game.Events.OnPieceWait -= IndicateValidMoves;
+            Game.Events.OnPieceDone -= ClearAll;
+            Game.Events.OnRequireCapture -= IndicateCapturingPieces;
+            Game.Events.OnUpdateMoves -= UpdateValidMoves;
+            Game.Events.OnRefresh -= ClearAll;
+            Game.Events.OnChangeTurn -= IndicateCapturingPieces;
         }
 
-        public void Init(Ruleset rules)
+        public void Init(MatchController match)
         {
-            Debug.Log("A");
             InitSelector();
+        }
+
+        public void ReceiveRuleset(Ruleset rules)
+        {
+            Rules = rules;
         }
 
         public void MoveSelector(Cell cell)
@@ -43,11 +67,60 @@ namespace Damath
                 Selector.Move(cell);
             }
         }
-
-        public void Hide()
+        
+        public void Refresh(Piece piece)
         {
             Selector.Hide();
             Clear();
+        }
+
+        public void Refresh(Cell cell)
+        {
+            Selector.Hide();
+            Clear();
+        }
+
+        public void UpdateValidMoves(List<Move> moves)
+        {
+            this.ValidMoves = moves;
+        }
+
+        public void ShowSelector(Piece piece)
+        {
+            Selector.Show();
+        }
+
+        
+        public void IndicateCapturingPieces(Side side)
+        {
+            IndicateCapturingPieces(true);
+        }
+        
+        public void IndicateCapturingPieces(bool value)
+        {
+            if (!value) return;
+
+            if (Rules.EnableMandatoryCapture)
+            {
+                if (ValidMoves.Count != 0)
+                {
+                    foreach (var move in ValidMoves)
+                    {
+                        CreateIndicator(IndicatorType.Box, move.originCell, new Color(0.25f, 0.75f, 0.42f), true);
+                    }
+                }
+            }
+        }
+
+        public void IndicateValidMoves(Piece piece)
+        {
+            if (ValidMoves.Count != 0)
+            {
+                foreach (Move move in ValidMoves)
+                {
+                    CreateIndicator(IndicatorType.Circle, move.destinationCell, Color.yellow);
+                }
+            }
         }
 
         Indicator InitSelector()
@@ -60,20 +133,20 @@ namespace Damath
             return Selector;
         }
 
-        public Indicator Create(IndicatorType indicatorType, Cell cell, Color color, bool ForceDisplay=false)
+        public Indicator CreateIndicator(IndicatorType indicatorType, Cell cell, Color color, bool ForceDisplay=false)
         {
             switch (indicatorType)
             {
                 case IndicatorType.Circle:
-                    return CreateCircle(indicatorType, cell, color, ForceDisplay);
+                    return CreateIndicatorCircle(indicatorType, cell, color, ForceDisplay);
                 case IndicatorType.Box:
-                    return CreateBox(indicatorType, cell, color, ForceDisplay);
+                    return CreateIndicatorBox(indicatorType, cell, color, ForceDisplay);
                 default:
                     return null;
             }
         }
 
-        Indicator CreateCircle(IndicatorType indicatorType, Cell cell, Color color, bool ForceDisplay=false)
+        Indicator CreateIndicatorCircle(IndicatorType indicatorType, Cell cell, Color color, bool ForceDisplay=false)
         {
             var newIndicator = Instantiate(_circleIndicatorPrefab, cell.transform.position, Quaternion.identity);
             Indicator c_indicator = newIndicator.GetComponent<Indicator>();
@@ -84,15 +157,16 @@ namespace Damath
             newIndicator.transform.SetParent(this.transform);
             newIndicator.transform.position = cell.transform.position;
             // newIndicator.transform.localScale = new Vector3(1f, 1f, 1f);
+            (c_indicator.Col, c_indicator.Row) = (cell.col, cell.row);
             c_indicator.ForceDisplay = ForceDisplay;
             c_spriteRenderer.color = color;
             newIndicator.SetActive(true);
-            if (ForceDisplay) forced.Add(c_indicator);
-            else active.Add(c_indicator);
+            if (ForceDisplay) Forced.Add(c_indicator);
+            else Active.Add(c_indicator);
             return c_indicator;
         }
 
-        Indicator CreateBox(IndicatorType indicatorType, Cell cell, Color color, bool ForceDisplay=false)
+        Indicator CreateIndicatorBox(IndicatorType indicatorType, Cell cell, Color color, bool ForceDisplay=false)
         {
             var newIndicator = Instantiate(_boxIndicatorPrefab, cell.transform.position, Quaternion.identity);
             Indicator c_indicator = newIndicator.GetComponent<Indicator>();
@@ -103,48 +177,69 @@ namespace Damath
             newIndicator.transform.SetParent(this.transform);
             newIndicator.transform.position = cell.transform.position;
             // newIndicator.transform.localScale = new Vector3(1f, 1f, 1f);
+            (c_indicator.Col, c_indicator.Row) = (cell.col, cell.row);
             c_indicator.ForceDisplay = ForceDisplay;
             c_spriteRenderer.color = color;
             newIndicator.SetActive(true);
-            if (ForceDisplay) forced.Add(c_indicator);
-            else active.Add(c_indicator);
+            if (ForceDisplay) Forced.Add(c_indicator);
+            else Active.Add(c_indicator);
             return c_indicator;
         }
+        
 
         public void Clear()
         {
-            if (active.Count != 0)
+            if (Active.Count != 0)
             {
-                foreach (var i in active)
+                foreach (var i in Active)
                 {
                     Destroy(i.gameObject);
                 }
-                active.Clear();
+                Active.Clear();
             }
+        }
+
+        public void Clear(Piece piece)
+        {
+            if (Active.Count != 0)
+            {
+                foreach (var i in Active)
+                {
+                    Destroy(i.gameObject);
+                }
+                Active.Clear();
+            }
+        }
+
+        public void ClearAll(Piece piece)
+        {
+            ClearAll();
         }
 
         public void ClearAll()
         {
-            if (active.Count != 0)
+            Selector.Hide();
+
+            if (Active.Count != 0)
             {
-                foreach (var i in active)
+                foreach (var i in Active)
                 {
                     Destroy(i.gameObject);
                 }
-                active.Clear();
+                Active.Clear();
             }
 
-            if (forced.Count != 0)
+            if (Forced.Count != 0)
             {
-                foreach (var i in forced)
+                foreach (var i in Forced)
                 {
                     Destroy(i.gameObject);
                 }
-                forced.Clear();
+                Forced.Clear();
             }
         }
 
-        void Show(Indicator indicator=null) 
+        void Show(Indicator indicator = null) 
         {
             if (indicator != null)
             {
@@ -152,14 +247,14 @@ namespace Damath
                 return;
             }
 
-            if (active.Count == 0) return;
-            foreach (var i in active)
+            if (Active.Count == 0) return;
+            foreach (var i in Active)
             {
                 i.gameObject.SetActive(true);
             }
         }
 
-        void Hide(Indicator indicator=null)
+        void Hide(Indicator indicator = null)
         {
             if (indicator != null)
             {
@@ -167,17 +262,12 @@ namespace Damath
                 return;
             }
 
-            if (active.Count == 0) return;
-            foreach (var i in active)
+            if (Active.Count == 0) return;
+            foreach (var i in Active)
             {
                 if (i == null) return;
                 i.gameObject.SetActive(false);
             }
-        }
-
-        void MoveTo(Cell cell)
-        {
-            // selectionIndicatorPrefab.transform.position = cell.transform.position;
         }
     }
 }

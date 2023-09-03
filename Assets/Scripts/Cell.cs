@@ -11,7 +11,7 @@ namespace Damath
         public int number;
         public int col, row;
         public Piece piece = null;
-        public bool IsEmpty = true;
+        public bool HasPiece = false;
         public bool IsValidMove = false;
         public Operation operation;
         public List<Sprite> sprite;
@@ -26,15 +26,6 @@ namespace Damath
         public void Refresh()
         {
             IsValidMove = false;
-        }
-
-        public bool HasPiece()
-        {
-            if (piece != null)
-            {
-                return true;
-            }
-            return false;
         }
 
         public void SetOperation(Operation value)
@@ -82,13 +73,13 @@ namespace Damath
             if (piece == null) return;
             
             this.piece = piece;
-            IsEmpty = false;
+            HasPiece = true;
         }
         
         public void RemovePiece()
         {
             piece = null;
-            IsEmpty = true;
+            HasPiece = false;
         }
     }
 }

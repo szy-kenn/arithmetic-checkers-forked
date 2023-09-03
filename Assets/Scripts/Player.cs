@@ -7,19 +7,18 @@ namespace Damath
 {
     public class Player : MonoBehaviour
     {
-        public string playerName = "Player";
-        public Side side;
-        public int pieceCount = 0;
-        public float score = 0f;
+        public string Name = "Player";
+        public Side Side;
+        public int PieceCount = 0;
+        public float Score = 0f;
         public bool IsPlaying = false;
         public bool IsModerator = false;
         public bool IsAI = false;
-        public Cell selectedCell = null;
-        public Match Match = null;
+        public Cell SelectedCell = null;
 
         void Start()
         {
-            this.name = $"Player ({playerName})";
+            this.name = $"Player ({Name})";
         }
 
         void Update()
@@ -30,7 +29,7 @@ namespace Damath
         public string SetName(string value)
         {
             this.name = $"Player {value}";
-            this.playerName = name;
+            this.Name = name;
             return value;
         }
 
@@ -42,22 +41,28 @@ namespace Damath
 
         public Side SetSide(Side value)
         {
-            this.side = value;
+            this.Side = value;
             return value;
         }
 
         public void SetScore(float value)
         {
-            this.score = value;
+            this.Score = value;
         }
 
         void DetectRaycast()
         {
             if (!IsPlaying) return;
 
+            if (Input.GetMouseButton(0))
+            {
+                Game.Events.PlayerHold(this);
+            }
+
             if (Input.GetMouseButtonDown(0))
             {
                 Game.Events.PlayerClick(this);
+
                 RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
                 if (hit.collider == null) return;
 
@@ -67,6 +72,7 @@ namespace Damath
             if (Input.GetMouseButtonDown(1))
             {
                 Game.Events.PlayerClick(this);
+
                 RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
                 if (hit.collider == null) return;
                 if (!IsModerator)
@@ -103,9 +109,12 @@ namespace Damath
 
             if (hit.collider.tag == "Cell")
             {
-                selectedCell = hit.collider.gameObject.GetComponent<Cell>();
+                SelectedCell = hit.collider.gameObject.GetComponent<Cell>();
 
-                Game.Events.CellSelect(selectedCell);
+                Game.Events.CellSelect(SelectedCell);
+            } else
+            {
+                Game.Events.PlayerDeselect(this);
             }
             // Add more else-if statements to add more components that can be detected by the Raycast
             // Make sure to include every game objects with tags to avoid getting not detected

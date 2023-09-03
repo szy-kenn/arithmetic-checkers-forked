@@ -91,7 +91,7 @@ namespace Damath
                 forward = -1;
                 // SetOwner(Game.Main.Match.players[1]);
             }
-            owner.pieceCount += 1;
+            owner.PieceCount += 1;
         }
 
         public void SetOwner(Player player)

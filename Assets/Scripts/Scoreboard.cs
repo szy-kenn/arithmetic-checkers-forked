@@ -8,7 +8,7 @@ namespace Damath
 {
     public class Scoreboard : MonoBehaviour
     {
-        public Ruleset Rules;
+        public Ruleset Rules  { get; private set; }
         public Dictionary<Side, Player> Players = new Dictionary<Side, Player>();
         public TextMeshProUGUI blueScore;
         public TextMeshProUGUI orangeScore;
@@ -16,6 +16,7 @@ namespace Damath
         void OnEnable()
         {
             Game.Events.OnMatchBegin += Init;
+            Game.Events.OnRulesetReturn -= ReceiveRuleset;
             Game.Events.OnPlayerCreate += AddPlayer;
             Game.Events.OnPieceCapture += Compute;
         }
@@ -23,16 +24,13 @@ namespace Damath
         void OnDisable()
         {
             Game.Events.OnMatchBegin -= Init;
+            Game.Events.OnRulesetReturn -= ReceiveRuleset;
             Game.Events.OnPlayerCreate -= AddPlayer;
             Game.Events.OnPieceCapture -= Compute;
         }
 
-        public void Init(Ruleset rules)
+        public void Init(MatchController match)
         {
-            this.Rules = rules;
-            blueScore = UIHandler.Main.ScoreboardUI.scoreBlue.GetComponent<TextMeshProUGUI>();
-            orangeScore = UIHandler.Main.ScoreboardUI.scoreOrange.GetComponent<TextMeshProUGUI>();
-
             foreach (var kv in Players)
             {
                 Player player = kv.Value;
@@ -41,20 +39,25 @@ namespace Damath
                     player.SetScore(0f);
                 }
             }
-            Refresh();
+            
+            Console.Log($"[SCOREBOARD]: Done initialization " + this);
         }
+
+        public void ReceiveRuleset(Ruleset rules)
+        {
+            Rules = rules;
+        }        
 
         public void AddPlayer(Player player)
         {
-            Console.Log($"[SCOREBOARD]: Created {player}");
-            Players.Add(player.side, player);
+            Players.Add(player.Side, player);
         }
 
 
         public void Refresh()
         {
-            blueScore.text = Players[Side.Bot].score.ToString();
-            orangeScore.text = Players[Side.Top].score.ToString();
+            blueScore.text = Players[Side.Bot].Score.ToString();
+            orangeScore.text = Players[Side.Top].Score.ToString();
         }
 
         public void Compute(Move move)
@@ -87,17 +90,17 @@ namespace Damath
 
         public void AddScore(Player player, float value)
         {
-            player.score += value;
+            player.Score += value;
         }
 
         public void RemoveScore(Player player, float value)
         {
-            player.score -= value;
+            player.Score -= value;
         }
 
         public float GetScore(Player player)
         {
-            return player.score;
+            return player.Score;
         }
     }
 }
