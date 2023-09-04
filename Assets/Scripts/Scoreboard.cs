@@ -10,8 +10,8 @@ namespace Damath
     {
         public Ruleset Rules  { get; private set; }
         public Dictionary<Side, Player> Players = new Dictionary<Side, Player>();
-        public TextMeshProUGUI blueScore;
-        public TextMeshProUGUI orangeScore;
+        public TextMeshProUGUI BlueScore;
+        public TextMeshProUGUI OrangeScore;
 
         void OnEnable()
         {
@@ -42,7 +42,7 @@ namespace Damath
             
             if (Settings.EnableDebugMode)
             {
-                Game.Console.Log($"[SCOREBOARD]: Done initialization " + this);
+                Game.Console.Log($"[DEBUG]: Scoreboard initialized ");
             }
         }
 
@@ -59,33 +59,28 @@ namespace Damath
 
         public void Refresh()
         {
-            blueScore.text = Players[Side.Bot].Score.ToString();
-            orangeScore.text = Players[Side.Top].Score.ToString();
+            BlueScore.text = Players[Side.Bot].Score.ToString();
+            OrangeScore.text = Players[Side.Top].Score.ToString();
         }
 
         public void Compute(Move move)
         {
-            float score = 0;
+            float score;
+            char operation;
             float x = float.Parse(move.capturingPiece.value);
             float y = float.Parse(move.capturedPiece.value);
 
-            switch (move.destinationCell.operation)
+            (score, operation) = move.destinationCell.operation switch
             {
-                case Operation.Add:
-                    score = x + y;
-                    break;
-                case Operation.Sub:
-                    score = x - y;
-                    break;
-                case Operation.Mul:
-                    score = x * y;
-                    break;
-                case Operation.Div:
-                    score = x / y;
-                    break;
-            }
+                Operation.Add => (x + y, '+'),
+                Operation.Sub => (x - y, '-'),
+                Operation.Mul => (x * y, '×'),
+                Operation.Div => (x / y, '÷'),
+                _ => throw new NotImplementedException(),
+            };
 
-            Game.Console.Log($"[ACTION]: {move.capturingPiece} captured {move.capturedPiece} for {score}");
+            Game.Console.Log($"[ACTION]: {move.capturingPiece.value} {operation} {move.capturedPiece.value} = {score}");
+
             move.SetScoreValue(score);
             AddScore(move.capturingPiece.owner, score);
             Refresh();

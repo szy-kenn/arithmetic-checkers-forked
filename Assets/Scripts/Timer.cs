@@ -16,9 +16,8 @@ namespace Damath
         public float currentTime = 0f;
         public bool IsEnabled = false;
         public bool IsRunning = false;
-        public List<UnityAction> callbacks = new List<UnityAction>();
-        public TextMeshProUGUI text = null;
-
+        public List<UnityAction> Callbacks = new List<UnityAction>();
+        public TextMeshProUGUI TMPComponent = null;
 
         void Update()
         {
@@ -26,9 +25,9 @@ namespace Damath
             
             currentTime -= 1 * Time.deltaTime;
 
-            if (text != null)
+            if (TMPComponent != null)
             {
-                text.text = Format switch
+                TMPComponent.text = Format switch
                 {
                     Format.MM_SS => ToMM_SS(),
                     Format.SS => ToSS(),
@@ -89,9 +88,9 @@ namespace Damath
         {
             IsRunning = false;
 
-            if (callbacks.Count == 0) return;
+            if (Callbacks.Count == 0) return;
 
-            foreach (var c in callbacks)
+            foreach (var c in Callbacks)
             {
                 c();
             }
@@ -115,7 +114,7 @@ namespace Damath
         
         public void Invoke()
         {
-            foreach (var c in callbacks)
+            foreach (var c in Callbacks)
             {
                 c();
             }
@@ -133,12 +132,12 @@ namespace Damath
 
         public void AddCallback(UnityAction function)
         {
-            callbacks.Add(function);
+            Callbacks.Add(function);
         }
 
         public void SetText(TextMeshProUGUI value)
         {
-            this.text = value;
+            this.TMPComponent = value;
         }
     }
 }

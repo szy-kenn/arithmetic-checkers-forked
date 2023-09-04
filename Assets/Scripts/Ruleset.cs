@@ -1,17 +1,13 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
 namespace Damath
 {
-    public enum Gamemode {Classic, Speed, Custom}
-
     /// <summary>
     /// A ruleset defines the rules for a match.
     /// It is created and modified only in the Title Scene.
     /// </summary>
     public class Ruleset
     {
+        public enum Type {Standard, Speed, Custom}
         public bool EnableCheats;
         public bool EnableMandatoryCapture;
         public bool EnableScoring;
@@ -24,30 +20,32 @@ namespace Damath
         public float GlobalTimerSeconds;
         public float TurnTimerSeconds;
         public Side FirstTurn;
+        // public SymbolMap SymbolMap;
+        // public PieceMap PieceMap;
 
         public Ruleset()
         {
-            SetClassic();
+            SetStandard();
         }
 
-        public Ruleset(Gamemode mode)
+        public Ruleset(Type value)
         {
-            switch (mode)
+            switch (value)
             {
-                case Gamemode.Classic:
-                    SetClassic();
+                case Type.Standard:
+                    SetStandard();
                     break;
                     
-                case Gamemode.Speed:
-                    SetClassic();
+                case Type.Speed:
+                    SetSpeed();
                     break;
 
-                case Gamemode.Custom:
-                    SetClassic();
+                case Type.Custom:
+                    SetStandard();
                     break;
 
                 default:
-                    SetClassic();
+                    SetStandard();
                     break;
             }
         }
@@ -57,7 +55,7 @@ namespace Damath
 
         }
 
-        public void SetClassic()
+        public void SetStandard()
         {
             EnableMandatoryCapture = true;
             EnablePromotion = true;

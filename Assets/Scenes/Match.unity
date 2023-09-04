@@ -466,12 +466,12 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 845282990}
-  m_RootOrder: 7
+  m_Father: {fileID: 1619485568}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -196, y: -33.5}
+  m_AnchoredPosition: {x: -0.000061035156, y: 9}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &225390175
@@ -1064,7 +1064,8 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1166865773}
   m_Father: {fileID: 845282990}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1901,8 +1902,6 @@ RectTransform:
   - {fileID: 1422791581}
   - {fileID: 516680250}
   - {fileID: 1619485568}
-  - {fileID: 1166865773}
-  - {fileID: 225390174}
   m_Father: {fileID: 224960769}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2032,11 +2031,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01c687830fc038d45b9cf3541be12ebb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingTimeInSeconds: 1201
-  currentTime: 1201
+  Format: 0
+  startingTimeInSeconds: 0
+  currentTime: 0
   IsEnabled: 1
   IsRunning: 0
-  text: {fileID: 0}
+  text: {fileID: 1201775684}
 --- !u!224 &1049602933
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2216,12 +2216,12 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 845282990}
-  m_RootOrder: 6
+  m_Father: {fileID: 516680250}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -196, y: 123.5}
+  m_AnchoredPosition: {x: -0.000061035156, y: 9}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1166865774
@@ -3687,7 +3687,8 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 225390174}
   m_Father: {fileID: 845282990}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3802,11 +3803,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01c687830fc038d45b9cf3541be12ebb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingTimeInSeconds: 60
-  currentTime: 60
+  Format: 0
+  startingTimeInSeconds: 0
+  currentTime: 0
   IsEnabled: 1
   IsRunning: 0
-  text: {fileID: 0}
+  text: {fileID: 1166865774}
 --- !u!224 &1644294984
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4734,11 +4736,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01c687830fc038d45b9cf3541be12ebb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingTimeInSeconds: 60
-  currentTime: 60
+  Format: 0
+  startingTimeInSeconds: 0
+  currentTime: 0
   IsEnabled: 1
   IsRunning: 0
-  text: {fileID: 0}
+  text: {fileID: 225390175}
 --- !u!224 &2138248598
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5633,9 +5636,8 @@ MonoBehaviour:
   GlobalTimer: {fileID: 1049602932}
   BlueTimer: {fileID: 1644294983}
   OrangeTimer: {fileID: 2138248597}
-  GlobalTimerTMP: {fileID: 1201775684}
-  BlueTimerTMP: {fileID: 1166865774}
-  OrangeTimerTMP: {fileID: 225390175}
+  BlueChip: {fileID: 516680249}
+  OrangeChip: {fileID: 1619485567}
   timerPrefab: {fileID: 7748704433066538445, guid: 99487801a8de3d84e95586353dbdbbf9, type: 3}
 --- !u!1 &7226299034451705006
 GameObject:
@@ -5915,8 +5917,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9492df5860ff15b48b1f512c44a46ee0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  blueScore: {fileID: 828713181}
-  orangeScore: {fileID: 1422791582}
+  BlueScore: {fileID: 0}
+  OrangeScore: {fileID: 0}
 --- !u!1 &8465437712750307133
 GameObject:
   m_ObjectHideFlags: 0

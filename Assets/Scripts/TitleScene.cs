@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Damath
@@ -22,13 +20,13 @@ namespace Damath
         {
             if (Input.GetKeyDown(KeyCode.F1))
             {
-                this.ruleset = new Ruleset(Gamemode.Classic);
+                this.ruleset = new Ruleset(Ruleset.Type.Standard);
                 Game.Console.Log("Created ruleset \"Classic\".");
             }
 
             if (Input.GetKeyDown(KeyCode.F2))
             {
-                this.ruleset = new Ruleset(Gamemode.Speed);
+                this.ruleset = new Ruleset(Ruleset.Type.Speed);
                 Game.Console.Log("Created ruleset \"Speed\".");
             }
 

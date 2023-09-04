@@ -335,13 +335,13 @@ namespace Damath
             {
                 if (args[2] == "classic")
                 {
-                    Game.Main.CreateMatch(new Ruleset(Gamemode.Classic));
+                    Game.Main.CreateMatch(new Ruleset(Ruleset.Type.Standard));
                 } else if (args[2] == "speed")
                 {
-                    Game.Main.CreateMatch(new Ruleset(Gamemode.Speed));
+                    Game.Main.CreateMatch(new Ruleset(Ruleset.Type.Speed));
                 } else if (args[3] == "custom")
                 {
-                    Game.Main.CreateMatch(new Ruleset(Gamemode.Custom));
+                    Game.Main.CreateMatch(new Ruleset(Ruleset.Type.Custom));
                 } else
                 {
                     PromptInvalid(args[0]);

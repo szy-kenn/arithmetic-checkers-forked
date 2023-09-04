@@ -2,9 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Damath;
-using TMPro;
-using System.Text.RegularExpressions;
 
 namespace Damath
 {
@@ -13,7 +10,6 @@ namespace Damath
         [Header("Board Settings")]
         [SerializeField] int maximumColumns = 8;
         [SerializeField] int maximumRows = 8;
-        public Map Map = null;
         public Themes Theme;
 
         public Ruleset Rules { get; private set; }
@@ -82,12 +78,13 @@ namespace Damath
         #region Initializing methods
         public void Init(MatchController match)
         {
-            Map ??= new Map();
-
             GenerateCells();
             GeneratePieces();
 
-            Debug.Log("[BOARD]: Done initialization " + this);
+            if (Settings.EnableDebugMode)
+            {
+                Game.Console.Log("[DEBUG]: Board initialized");
+            }
         }
 
         /// <summary>
@@ -112,10 +109,10 @@ namespace Damath
                     rect.GetComponent<RectTransform>().localScale = new Vector2(Constants.cellSize, Constants.cellSize);
                     
                     newCell.SetColRow(col, row);
-                    if (Map.symbols.ContainsKey((col, row)))
-                    {
-                        newCell.SetOperation(Map.symbols[(col, row)]);
-                    }
+                    // if (Rules.SymbolMap.Symbols.ContainsKey((col, row)))
+                    // {
+                    //     newCell.SetOperation(Rules.SymbolMap.Symbols[(col, row)]);
+                    // }
                     Cellmap[(col, row)] = newCell;
                 }
             }
@@ -129,39 +126,39 @@ namespace Damath
         /// </summary>
         void GeneratePieces()
         {
-            GameObject pieceGroup = new GameObject("Pieces");
+            GameObject pieceGroup = new("Pieces");
             pieceGroup.transform.SetParent(grid.transform);
 
-            foreach (var pieceData in Map.pieces)
-            {
-                int col = pieceData.Key.Item1;
-                int row = pieceData.Key.Item2;
-                Side side = pieceData.Value.Item1;
-                string value = pieceData.Value.Item2;
-                bool IsKing = pieceData.Value.Item3;
+            // foreach (var pieceData in Rules.PieceMap.Pieces)
+            // {
+            //     int col = pieceData.Key.Item1;
+            //     int row = pieceData.Key.Item2;
+            //     Side side = pieceData.Value.Item1;
+            //     string value = pieceData.Value.Item2;
+            //     bool IsKing = pieceData.Value.Item3;
                 
-                Cell cell = GetCell(col, row);
+            //     Cell cell = GetCell(col, row);
     
-                Piece newPiece = Instantiate(piecePrefab, new Vector3(col, row, 0), Quaternion.identity);
-                newPiece.name = $"Piece ({value})";
-                newPiece.transform.SetParent(pieceGroup.transform);
-                newPiece.transform.position = cell.transform.position;
+            //     Piece newPiece = Instantiate(piecePrefab, new Vector3(col, row, 0), Quaternion.identity);
+            //     newPiece.name = $"Piece ({value})";
+            //     newPiece.transform.SetParent(pieceGroup.transform);
+            //     newPiece.transform.position = cell.transform.position;
 
-                newPiece.SetCell(cell);
-                newPiece.SetOwner(Players[side]);
-                newPiece.SetTeam(side);
-                if (side == Side.Bot)
-                {
-                    newPiece.SetColor(Theme.botChipColor, Theme.botChipShadow);
-                } else
-                {
-                    newPiece.SetColor(Theme.topChipColor, Theme.topChipShadow);
-                }
-                newPiece.SetValue(value);
-                newPiece.SetKing(IsKing);
+            //     newPiece.SetCell(cell);
+            //     newPiece.SetOwner(Players[side]);
+            //     newPiece.SetTeam(side);
+            //     if (side == Side.Bot)
+            //     {
+            //         newPiece.SetColor(Theme.botChipColor, Theme.botChipShadow);
+            //     } else
+            //     {
+            //         newPiece.SetColor(Theme.topChipColor, Theme.topChipShadow);
+            //     }
+            //     newPiece.SetValue(value);
+            //     newPiece.SetKing(IsKing);
 
-                cell.SetPiece(newPiece);
-            }
+            //     cell.SetPiece(newPiece);
+            // }
         }
         #endregion
 

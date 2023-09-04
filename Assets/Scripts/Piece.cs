@@ -23,7 +23,7 @@ namespace Damath
         public bool CanCapture = false;
         public bool HasCaptured = false;
         public int forward = 0;
-        public List<Move> moves = new List<Move>();
+        public List<Move> moves = new();
         public List<Sprite> sprites;
 
         RectTransform rect;
