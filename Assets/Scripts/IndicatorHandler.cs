@@ -22,7 +22,7 @@ namespace Damath
         void OnEnable()
         {
             Game.Events.OnMatchBegin += Init;
-            Game.Events.OnRulesetReturn += ReceiveRuleset;
+            Game.Events.OnRulesetCreate += ReceiveRuleset;
             Game.Events.OnCellSelect += MoveSelector;
             Game.Events.OnCellDeselect += Refresh;
             Game.Events.OnPieceSelect += ShowSelector;
@@ -30,14 +30,14 @@ namespace Damath
             Game.Events.OnPieceWait += IndicateValidMoves;
             Game.Events.OnPieceDone += ClearAll;
             Game.Events.OnRequireCapture += IndicateCapturingPieces;
-            Game.Events.OnUpdateMoves += UpdateValidMoves;
+            Game.Events.OnBoardUpdateMoves += UpdateValidMoves;
             Game.Events.OnRefresh += ClearAll;
             Game.Events.OnChangeTurn += IndicateCapturingPieces;
         }
         void OnDisable()
         {
             Game.Events.OnMatchBegin -= Init;
-            Game.Events.OnRulesetReturn -= ReceiveRuleset;
+            Game.Events.OnRulesetCreate -= ReceiveRuleset;
             Game.Events.OnCellSelect -= MoveSelector;
             Game.Events.OnCellDeselect -= Refresh;
             Game.Events.OnPieceSelect -= ShowSelector;
@@ -45,7 +45,7 @@ namespace Damath
             Game.Events.OnPieceWait -= IndicateValidMoves;
             Game.Events.OnPieceDone -= ClearAll;
             Game.Events.OnRequireCapture -= IndicateCapturingPieces;
-            Game.Events.OnUpdateMoves -= UpdateValidMoves;
+            Game.Events.OnBoardUpdateMoves -= UpdateValidMoves;
             Game.Events.OnRefresh -= ClearAll;
             Game.Events.OnChangeTurn -= IndicateCapturingPieces;
         }

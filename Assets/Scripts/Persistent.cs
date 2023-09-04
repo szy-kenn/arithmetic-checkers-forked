@@ -4,17 +4,18 @@ using UnityEngine;
 
 public class Persistent : MonoBehaviour
 {
-    static Persistent Instance;
+    static Persistent _instance;
 
     void Awake()
     {
-        if (Instance != null && Instance == this)
+        if (_instance != null && _instance == this)
         {
             Destroy(this);
-            return;
+        } else
+        {
+            _instance = this;
+            DontDestroyOnLoad(this);
         }
         
-        Instance = this;
-        DontDestroyOnLoad(this);
     }
 }

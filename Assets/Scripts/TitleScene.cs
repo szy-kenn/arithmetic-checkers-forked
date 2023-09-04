@@ -22,14 +22,14 @@ namespace Damath
         {
             if (Input.GetKeyDown(KeyCode.F1))
             {
-                this.ruleset = new Ruleset(Ruleset.Gamemode.Classic);
-                Console.Log("Created ruleset \"Classic\".");
+                this.ruleset = new Ruleset(Gamemode.Classic);
+                Game.Console.Log("Created ruleset \"Classic\".");
             }
 
             if (Input.GetKeyDown(KeyCode.F2))
             {
-                this.ruleset = new Ruleset(Ruleset.Gamemode.Speed);
-                Console.Log("Created ruleset \"Speed\".");
+                this.ruleset = new Ruleset(Gamemode.Speed);
+                Game.Console.Log("Created ruleset \"Speed\".");
             }
 
             if (Input.GetKeyDown(KeyCode.Space))

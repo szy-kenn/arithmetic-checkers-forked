@@ -7,14 +7,17 @@ using TMPro;
 
 namespace Damath
 {
+    public enum Format {MM_SS, SS}
+
     public class Timer : MonoBehaviour
     {
+        public Format Format = Format.MM_SS;
         public float startingTimeInSeconds = 0f;
         public float currentTime = 0f;
         public bool IsEnabled = false;
         public bool IsRunning = false;
         public List<UnityAction> callbacks = new List<UnityAction>();
-        public TextMeshProUGUI text;
+        public TextMeshProUGUI text = null;
 
 
         void Update()
@@ -22,6 +25,16 @@ namespace Damath
             if (!IsRunning) return;
             
             currentTime -= 1 * Time.deltaTime;
+
+            if (text != null)
+            {
+                text.text = Format switch
+                {
+                    Format.MM_SS => ToMM_SS(),
+                    Format.SS => ToSS(),
+                    _ => ToSS()
+                };
+            }
 
             if (currentTime < 0)
             {
@@ -32,6 +45,11 @@ namespace Damath
         public void Init(float value)
         {
             currentTime = value;
+        }
+
+        public void SetFormat(Format format)
+        {
+            Format = format;
         }
 
         public string ToMM_SS()
@@ -60,7 +78,7 @@ namespace Damath
             IsRunning = false;
         }
 
-        public void Reset(bool start=false)
+        public void Reset(bool start = false)
         {
             currentTime = startingTimeInSeconds;
             IsRunning = start;
@@ -85,6 +103,12 @@ namespace Damath
         }
 
         public void SetTime(float valueInSeconds)
+        {
+            startingTimeInSeconds = valueInSeconds;
+            currentTime = valueInSeconds;
+        }
+
+        public void ChangeTime(float valueInSeconds)
         {
             currentTime = valueInSeconds;
         }

@@ -17,7 +17,7 @@ namespace Damath
         public Themes Theme;
 
         public Ruleset Rules { get; private set; }
-        public Dictionary<(int, int), Cell> cellMap = new Dictionary<(int, int), Cell>();
+        public Dictionary<(int, int), Cell> Cellmap = new Dictionary<(int, int), Cell>();
         public Dictionary<Side, Player> Players = new Dictionary<Side, Player>();
         public Piece SelectedPiece = null;
         public List<Move> ValidMoves = new List<Move>();
@@ -48,13 +48,13 @@ namespace Damath
 
         void OnEnable()
         {
-            Game.Events.OnRulesetReturn += ReceiveRuleset;
+            Game.Events.OnRulesetCreate += ReceiveRuleset;
             Game.Events.OnMatchBegin += Init;
             Game.Events.OnPieceSelect += SelectPiece;
             Game.Events.OnMoveSelect += SelectMove;
             Game.Events.OnMoveTypeRequest += UpdateMoveType;
             Game.Events.OnRequireCapture += UpdateRequireCaptureState;
-            Game.Events.OnUpdateMoves += UpdateMoves;
+            Game.Events.OnBoardUpdateMoves += UpdateMoves;
             Game.Events.OnPieceMove += MovePiece;
             Game.Events.OnPlayerCreate += AddPlayer;
             Game.Events.OnPieceCapture += CapturePiece;
@@ -64,13 +64,13 @@ namespace Damath
 
         void OnDisable()
         {
-            Game.Events.OnRulesetReturn -= ReceiveRuleset;
+            Game.Events.OnRulesetCreate -= ReceiveRuleset;
             Game.Events.OnMatchBegin -= Init;
             Game.Events.OnPieceSelect -= SelectPiece;
             Game.Events.OnMoveSelect -= SelectMove;
             Game.Events.OnMoveTypeRequest -= UpdateMoveType;
             Game.Events.OnRequireCapture -= UpdateRequireCaptureState;
-            Game.Events.OnUpdateMoves -= UpdateMoves;
+            Game.Events.OnBoardUpdateMoves -= UpdateMoves;
             Game.Events.OnPieceMove -= MovePiece;
             Game.Events.OnPlayerCreate -= AddPlayer;
             Game.Events.OnPieceCapture -= CapturePiece;
@@ -116,10 +116,12 @@ namespace Damath
                     {
                         newCell.SetOperation(Map.symbols[(col, row)]);
                     }
-                    cellMap[(col, row)] = newCell;
+                    Cellmap[(col, row)] = newCell;
                 }
             }
-            return cellMap;
+
+            Game.Events.BoardUpdateCellmap(Cellmap);
+            return Cellmap;
         }
 
         /// <summary>
@@ -165,7 +167,10 @@ namespace Damath
 
         public void AddPlayer(Player player)
         {
-            Console.Log($"[BOARD]: Created {player}");
+            if (Settings.EnableDebugMode)
+            {
+                Game.Console.Log($"[BOARD]: Created {player}");
+            }
             Players.Add(player.Side, player);
         }
 
@@ -176,7 +181,7 @@ namespace Damath
 
         public void ReturnCell(int col, int row)
         {
-            Game.Events.CellReturn(cellMap[(col, row)]);
+            Game.Events.CellReturn(Cellmap[(col, row)]);
         }
 
         public void ReceiveRuleset(Ruleset rules)
@@ -203,11 +208,9 @@ namespace Damath
 
             if (TurnRequiresCapture)
             {
-                Debug.Log("get capture");
                 GetPieceMoves(piece, MoveType.Capture);
             } else
             {
-                Debug.Log("get normal");
                 GetPieceMoves(piece);
             }
         }
@@ -233,7 +236,7 @@ namespace Damath
         /// </summary>
         public void MovePiece(Move move)
         {
-            Debug.Log($"[ACTION]: Moved {SelectedPiece}: ({move.originCell.col}, {move.originCell.row}) -> ({move.destinationCell.col}, {move.destinationCell.row})");
+            Game.Console.Log($"[ACTION]: Moved {SelectedPiece.value}: ({move.originCell.col}, {move.originCell.row}) -> ({move.destinationCell.col}, {move.destinationCell.row})");
 
             Piece pieceToMove = move.originCell.piece;
 
@@ -249,13 +252,13 @@ namespace Damath
         }
 
         /// <summary>
-        /// Animates the move piece.
+        /// Animates the moved piece.
         /// </summary>
         public void AnimateMovedPiece(Move move)
         {
             // Swap pieces
             (move.originCell.piece, move.destinationCell.piece) = (move.destinationCell.piece, move.originCell.piece);
-
+            // Reinitialization
             move.originCell.HasPiece = false;
             move.destinationCell.HasPiece = true;
 
@@ -278,7 +281,7 @@ namespace Damath
 
             if (ValidMoves.Count != 0) // Has chain capture
             {
-                Game.Events.UpdateMoves(ValidMoves);
+                Game.Events.BoardUpdateMoves(ValidMoves);
                 Game.Events.RequireCapture(true);
             } else // No chain capture
             {
@@ -330,7 +333,7 @@ namespace Damath
             moves = CheckIfCaptureable(piece);
             if (moves.Count != 0) // Piece is captureable
             {
-                Game.Events.UpdateMoves(moves);
+                Game.Events.BoardUpdateMoves(moves);
                 Game.Events.RequireCapture(true);
             } else // Piece is NOT captureable
             {
@@ -347,7 +350,7 @@ namespace Damath
 
             moves.AddRange(CheckIfCaptureable(piece));
 
-            Game.Events.UpdateMoves(moves);
+            Game.Events.BoardUpdateMoves(moves);
 
             if (moves.Count != 0)
             {
@@ -428,7 +431,7 @@ namespace Damath
             }
 
             ValidMoves = moves;
-            Game.Events.UpdateMoves(ValidMoves);
+            Game.Events.BoardUpdateMoves(ValidMoves);
             Game.Events.PieceWait(piece);
         }
 
@@ -462,7 +465,7 @@ namespace Damath
             }
 
             ValidMoves = moves;
-            Game.Events.UpdateMoves(ValidMoves);
+            Game.Events.BoardUpdateMoves(ValidMoves);
             Game.Events.PieceWait(piece);
             return moves;
         }
@@ -591,17 +594,17 @@ namespace Damath
 
         public Cell GetCell(int col, int row)
         {
-            return cellMap[(col, row)];
+            return Cellmap[(col, row)];
         }
 
         public Cell GetCell(Piece piece)
         {
-            return cellMap[(piece.col, piece.row)];
+            return Cellmap[(piece.col, piece.row)];
         }
 
         public Dictionary<(int, int), Cell> GetCells()
         {
-            return cellMap;
+            return Cellmap;
         }
     }
 }

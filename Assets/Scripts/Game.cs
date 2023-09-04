@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 namespace Damath
 {
     /// <summary>
-    /// Game manager.
+    /// Main game controller.
     /// </summary>
     public class Game : MonoBehaviour
     {
@@ -19,7 +19,7 @@ namespace Damath
         protected bool IsAlive;
         public bool IsPaused;
         public bool HasMatch { get; private set; }
-        public Ruleset ruleset = null;
+        public Ruleset Ruleset = null;
 
         void Awake()
         {
@@ -36,17 +36,24 @@ namespace Damath
             }
         }
 
+        void Update()
+        {
+            if (Input.GetKeyDown(Settings.KeyBinds.OpenDeveloperConsole))
+            {
+                if (!Settings.EnableConsole) return;
+                Game.Console.Window.Toggle();
+            }
+        }
+
         void Start()
         {
             IsAlive = true;
-
-            // Initialize event manager
+            HasMatch = false;
 
             if (Settings.EnableConsole)
             {
                 Console.Enable();
             }
-            // Initialize console
         }
         
         public void Pause(bool value)
@@ -60,6 +67,7 @@ namespace Damath
             {
                 if (playTransition)
                 {
+                    // Play transition
                     StartCoroutine(Load(scene, delayInSeconds));
                 } else
                 {
@@ -82,8 +90,8 @@ namespace Damath
         /// </summary>
         public void CreateMatch(Ruleset ruleset, bool start = false)
         {
-            this.ruleset = ruleset;
-
+            Ruleset = ruleset;
+            Game.Events.RulesetCreate(ruleset);
             if (start) StartMatch();
         }
 

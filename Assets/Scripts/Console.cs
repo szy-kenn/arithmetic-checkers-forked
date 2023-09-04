@@ -17,21 +17,13 @@ namespace Damath
         public class Command
         {
             public enum ArgType {Required, Optional}
-            public string Name = "none";
-            public string Description
-            {
-                get { return Description; }
-                set { Description = value; }
-            }
+            public string Name = "";
+            public string Syntax = "";
+            public string Description = "";
             public List<(string, ArgType)> Arguments;
             public List<string> Parameters;
             public List<string> Aliases;
             public UnityAction<List<string>> Calls;
-
-            public Command(string name)
-            {
-                Name = name;
-            }
 
             public void AddParameters(List<string> Parameters)
             {
@@ -42,9 +34,12 @@ namespace Damath
                 Aliases.Add(alias);
             }
             
-            public void AddCallback(UnityAction<List<string>> func)
+            public void AddCallback(UnityAction<List<string>> func = null)
             {
-                Calls = func;
+                if (func != null)
+                {
+                    Calls = func;
+                }
             }
 
             public void SetDescription(string value)
@@ -63,13 +58,16 @@ namespace Damath
             }
         }
 
+        public Player Operator = null;
         public Dictionary<string, Command> Commands = new();
         public static Console Main { get; private set; }
         public bool IsEnabled = false;
         public string command;
-        public Window window = null;
+        public Window Window = null;
         
         public MatchController Match = null;
+        public Cell SelectedCell = null;
+        public Dictionary<(int, int), Cell> Cellmap;
 
         [SerializeField] GameObject windowPrefab;
         TMP_InputField input;
@@ -94,25 +92,7 @@ namespace Damath
         {
             IsEnabled = false;
             Game.Events.OnMatchBegin -= ReceiveMatchInstance;
-        }
-
-        void Update()
-        {
-            if (IsEnabled)
-            {
-                if (Input.GetKeyDown(KeyCode.Tilde))
-                {
-                    if (window == null) return;
-                    window.Toggle();
-                }
-            } else
-            {
-                if (Input.GetKeyDown(KeyCode.F1))
-                {
-                    if (IsEnabled) return;
-                    Enable();
-                }
-            }
+            Game.Events.OnBoardUpdateCellmap -= ReceiveCellmap;
         }
 
         /// <summary>
@@ -130,15 +110,30 @@ namespace Damath
             Match = match;
         }
 
-        void Init()
+        public void SetOperator(Player player)
+        {
+            Operator = player;
+        }
+
+        void SubscribeToEvents()
         {
             Game.Events.OnMatchBegin += ReceiveMatchInstance;
+            Game.Events.OnBoardUpdateCellmap += ReceiveCellmap;
+        }
 
+        void ReceiveCellmap(Dictionary<(int, int), Cell> cellmap)
+        {
+            Cellmap = cellmap;
+        }
+
+        void Init()
+        {
+            SubscribeToEvents();
             CreateWindow();
-            input = window.transform.Find("Input").GetComponent<TMP_InputField>();
-            messages = window.transform.Find("Message").GetComponent<TextMeshProUGUI>();
+            input = Window.transform.Find("Input").GetComponent<TMP_InputField>();
+            messages = Window.transform.Find("Message").GetComponent<TextMeshProUGUI>();
 
-            input?.onSubmit.AddListener(new UnityAction<string>(GetCommand)); 
+            input.onSubmit.AddListener(new UnityAction<string>(GetCommand)); 
 
             InitCommands();
             Log($"[CONSOLE]: Started");
@@ -146,25 +141,30 @@ namespace Damath
 
         void CreateWindow()
         {
-            if (window != null)
+            if (Window != null)
             {
-                window.Delete();
-                window = Game.UI.CreateWindow(windowPrefab);
+                Window.Delete();
+                Window = Game.UI.CreateWindow(windowPrefab);
             } else
             {
-                window = Game.UI.CreateWindow(windowPrefab);
+                Window = Game.UI.CreateWindow(windowPrefab);
             }
-            window.rect.pivot = new Vector2(0f, 0f);
-            window.rect.offsetMin = new Vector2(30f, 30f);
-            window.rect.offsetMax = new Vector2(400f, 160f);
+            Window.rect.pivot = new Vector2(0f, 0f);
+            Window.rect.offsetMin = new Vector2(30f, 30f);
+            Window.rect.offsetMax = new Vector2(400f, 160f);
+            Window.Close();
         }
 
-        public Command CreateCommand(string command)
+        public Command CreateCommand(string command, string description = "")
         {
-            Debug.Log("creating command " + command);
             var args = command.Split(" ");
             string commandName = args[0];
-            Command newCommand = new(commandName);
+            Command newCommand = new()
+            {
+                Name = args[0],
+                Syntax = command,
+                Description = description
+            };
 
             int i = 0;
             foreach (string arg in args)
@@ -196,16 +196,30 @@ namespace Damath
 
         void InitCommands()
         {
-            CreateCommand("chat <message>").AddCallback(Command_Chat);
-            CreateCommand("help [command]").AddCallback(Command_Help);
-            CreateCommand("match <create|get>").AddCallback(Command_Match);
-            // CreateCommand("ping [player]");
-            CreateCommand("move <col> <row>").AddCallback(Command_Select);
-            CreateCommand("piece <select|add|remove> <col> <row>").AddCallback(Command_Select);
-            CreateCommand("select <col> <row>").AddCallback(Command_Select);
-            CreateCommand("selectmove <col> <row> <toCol> <toRow>").AddCallback(Command_Select);
+            CreateCommand("chat <message>",
+                          "Send a message.").AddCallback(Command_Chat);
 
-            // CreateCommand("test <number|string>");
+            CreateCommand("connect <address>",
+                          "Connect to a match.").AddCallback(Command_Connect);
+
+            CreateCommand("draw",
+                          "Offer a draw.").AddCallback();
+                        
+            CreateCommand("forfeit",
+                          "Forfeit match.").AddCallback();
+
+            CreateCommand("help <command>").AddCallback(Command_Help);
+
+            CreateCommand("host",
+                          "Host current match.").AddCallback(Command_Host);
+
+            CreateCommand("match <create> <classic|speed|custom>").AddCallback(Command_Match);
+
+            CreateCommand("piece <s|s> <col> <row> [value]",
+                          "Piece actions.").AddCallback(Command_Piece);
+
+            CreateCommand("select <col> <row>",
+                          "Select a cell.").AddCallback(Command_Select);
         }
 
         /// <summary>
@@ -225,8 +239,9 @@ namespace Damath
         {
             if (input == "") return;
             command = input;
-
             Run(command);
+            this.input.text = "";
+            this.input.Select();
         }
 
         public void Refresh()
@@ -234,9 +249,15 @@ namespace Damath
             input.text = "";
         }
 
-        public static void Log(string message)
+        public void Log(object message)
         {
-            Debug.Log(message);
+            if (message.GetType() != typeof(string))
+            {
+                Debug.Log(message);
+            } else
+            {
+                messages.text += $"\n{message}";
+            }
         }
 
         /// <summary>
@@ -244,16 +265,29 @@ namespace Damath
         /// </summary>
         public void Run(string command)
         {
-            if (command.Remove(0, 1) != "/")
+            if (command.Contains("/")) command = command.Replace("/", "");
+
+            List<string> args = new(command.Split());
+            Command toInvoke;
+
+            try
+            {
+                toInvoke = Commands[args[0]];
+                Game.Events.PlayerCommand(Operator);
+
+                try
+                {
+                    toInvoke.Invoke(args);
+                } catch
+                {  
+                    PromptInvalid(args[0]);
+                    return;
+                }
+            } catch
             {
                 PromptInvalid();
                 return;
             }
-
-            List<string> args = new(command.Split());
-
-            Command toInvoke = Commands[args[0]];
-            toInvoke.Invoke(args);
         }
 
         // Console commands list
@@ -261,7 +295,12 @@ namespace Damath
 
         void Command_Chat(List<string> args)
         {
-            Debug.Log($"Sent message: {args[1]}");
+            Log($"Sent message: {args[1]}");
+        }
+
+        void Command_Connect(List<string> args)
+        {
+            string ip = args[1];
         }
 
         void Command_Help(List<string> args)
@@ -269,47 +308,94 @@ namespace Damath
             if (args.Count == 1)
             {
                 // Run help command
-                Debug.Log("List of available commands: ");
+                Log("List of available commands: ");
                 // Iterate through command list keys
                 
             } else
             {
                 if (int.TryParse(args[1], out int page))
                 {
-                    // page = page;
+                    Log($"Showing page {page}");
                 } else
                 {
-                    Debug.Log(Commands[args[0]].Description);
+                    Log($"Usage: " + Commands[args[1]].Syntax);
+                    Log(Commands[args[1]].Description);
                 }
             }
+        }
 
-            Debug.Log($"Usage: /{args[1]}");
+        void Command_Host(List<string> args)
+        {
+            string ip = args[1];
         }
 
         void Command_Match(List<string> args)
         {
             if (args[1] == "create")
             {
+                if (args[2] == "classic")
+                {
+                    Game.Main.CreateMatch(new Ruleset(Gamemode.Classic));
+                } else if (args[2] == "speed")
+                {
+                    Game.Main.CreateMatch(new Ruleset(Gamemode.Speed));
+                } else if (args[3] == "custom")
+                {
+                    Game.Main.CreateMatch(new Ruleset(Gamemode.Custom));
+                } else
+                {
+                    PromptInvalid(args[0]);
+                    return;
+                }
+                Log($"Created match with mode {args[2]}");
+            } else if (args[1] == "start")
+            {
+                if (Game.Main.Ruleset == null)
+                {
+                    Log("No match created. Create one with /match create <mode>");
+                } else
+                {
+                    if (Game.Main.HasMatch)
+                    {
+                        Log($"A match is already running.");
+                    } else
+                    {
+                        Game.Main.StartMatch();
+                    }
+                }
+            } else if (args[1] == "get")
+            {
+                Log(Match);
+            }
+        }
+
+        void Command_Piece(List<string> args)
+        {
+            if (args[1] == "create")
+            {
                 //
             } else if (args[1] == "get")
             {
-                Debug.Log(Match);
+                Log(Match);
             }
         }
 
         void Command_Select(List<string> args)
         {
-            foreach (var a in args)
-            {
-                Debug.Log(a);
-            }
             (int col, int row) = (int.Parse(args[1]), int.Parse(args[2]));
             
-            Match.SelectCell(col, row);
+            Game.Events.PlayerSelect(Operator);
+            Game.Events.CellSelect(Cellmap[(col, row)]);
         }
         
-
-
-        #endregion 
+        void Command_Move(List<string> args)
+        {
+            (int col, int row) = (int.Parse(args[1]), int.Parse(args[2]));
+            
+            Game.Events.PlayerSelect(Operator);
+            Game.Events.CellSelect(Cellmap[(col, row)]);
+        }
+        
+        #endregion
     }
 }

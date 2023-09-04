@@ -3,20 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using TMPro;
+using Unity.VisualScripting;
 
 namespace Damath
 {
     public class TimerManager : MonoBehaviour
     {
         public Ruleset Rules { get; private set; }
-        public List<Timer> activeTimers = new List<Timer>();
-        public List<Timer> inactiveTimers = new List<Timer>();
-        public Timer globalTimer;
-        public Timer blueTimer;
-        public Timer orangeTimer;
-        public TextMeshProUGUI globalTimerTMP;
-        public TextMeshProUGUI blueTimerTMP;
-        public TextMeshProUGUI orangeTimerTMP;
+        public Timer GlobalTimer;
+        public Timer BlueTimer;
+        public Timer OrangeTimer;
+        [SerializeField] GameObject BlueChip;
+        [SerializeField] GameObject OrangeChip;
         [SerializeField] GameObject timerPrefab;
 
         void Awake()
@@ -26,156 +24,98 @@ namespace Damath
 
         void OnEnable()
         {
+            Game.Events.OnRulesetCreate += ReceiveRuleset;
             Game.Events.OnMatchBegin += Init;
-            Game.Events.OnRulesetReturn += ReceiveRuleset;
+            Game.Events.OnChangeTurn += SwapTurnTimer;
         }
 
         void OnDisable()
         {
+            Game.Events.OnRulesetCreate -= ReceiveRuleset;
             Game.Events.OnMatchBegin -= Init;
-            Game.Events.OnRulesetReturn -= ReceiveRuleset;
+            Game.Events.OnChangeTurn -= SwapTurnTimer;
         }
 
         void Update()
         {
-            if (globalTimer != null)
-            {
-                globalTimerTMP.text = globalTimer.ToMM_SS();
-            }
-            
-            if (blueTimer != null)
-            {
-                blueTimerTMP.text = blueTimer.ToSS();
-            }
-            
-            if (orangeTimer != null)
-            {
-                orangeTimerTMP.text = orangeTimer.ToSS();
-            }
+
+        }
+
+        void ReceiveRuleset(Ruleset rules)
+        {
+            Rules = rules;
         }
         
-        public void Init(MatchController match)
+        public void Init()
         {
             if (Rules.EnableTimer) 
             {
                 if (Rules.EnableGlobalTimer)
                 {
-                    InitGlobal(Rules.globalTimerSeconds);
+                    GlobalTimer.SetFormat(Format.MM_SS);
+                    GlobalTimer.SetTime(Rules.GlobalTimerSeconds);
+                    GlobalTimer.Begin();
                 }
                 if (Rules.EnableTurnTimer)
                 {
-                    InitTurn(Rules.turnTimerSeconds);
+                    BlueTimer.SetFormat(Format.SS);
+                    BlueTimer.SetTime(Rules.TurnTimerSeconds);
+                    
+                    OrangeTimer.SetFormat(Format.SS);
+                    OrangeTimer.SetTime(Rules.TurnTimerSeconds);
+
+                    if (Rules.FirstTurn == Side.Bot)
+                    {
+                        BlueTimer.Begin();
+                        OrangeChip.SetActive(false);
+                    } else if (Rules.FirstTurn == Side.Top)
+                    {
+                        OrangeTimer.Begin();
+                        BlueChip.SetActive(false);
+                    }
                 }
-                StartAll();
             }
         }
 
-        public void ReceiveRuleset(Ruleset rules)
+        public void Init(MatchController match)
         {
-            Rules = rules;
+            Init();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        void InitTurn(float timeInSeconds)
+        public void SwapTurnTimer(Side turnOf)
         {
-            blueTimer = CreateTimer(timeInSeconds, "Blue Turn Timer");
-            orangeTimer = CreateTimer(timeInSeconds, "Orange Turn Timer");
-        }
-
-        void InitGlobal(float timeInSeconds)
-        {
-            globalTimer = CreateTimer(timeInSeconds, "Global Timer");
-        }
-
-        public Timer CreateTimer(float startingTimeInSeconds, string name="New Timer", TextMeshProUGUI textComponent=null)
-        {
-            var newTimer = Instantiate(timerPrefab);
-            newTimer.name = name;
-            newTimer.transform.SetParent(transform);
-            Timer c_timer = newTimer.GetComponent<Timer>();
-
-            if (textComponent != null)
+            if (turnOf == Side.Bot)
             {
-                c_timer.SetText(textComponent);
-            }
+                OrangeTimer.Stop();
+                OrangeChip.SetActive(false);
 
-            c_timer.Init(startingTimeInSeconds);
-            inactiveTimers.Add(c_timer);
-            return c_timer;
-        }
-
-        public Timer GetTimer(string name)
-        {
-            foreach (Timer t in activeTimers)
+                BlueChip.SetActive(true);
+                BlueTimer.Reset(true);
+            } else
             {
-                if (t.name == name) return t;
-            }
-            return null;
-        }
+                BlueTimer.Stop();
+                BlueChip.SetActive(false);
 
-        public void StartTimer(string name)
-        {
-            foreach (Timer t in inactiveTimers)
-            {
-                if (t.name != name) continue;
-
-                _StartTimer(t);
-                break;
+                OrangeChip.SetActive(true);
+                OrangeTimer.Reset(true);
             }
         }
 
-        public void StopTimer(string name)
-        {
-            foreach (Timer t in inactiveTimers)
-            {
-                if (t.name != name) continue;
+        // public Timer CreateTimer(float startingTimeInSeconds, string name="New Timer", TextMeshProUGUI textComponent=null)
+        // {
+        //     var newTimer = Instantiate(timerPrefab);
+        //     newTimer.name = name;
+        //     newTimer.transform.SetParent(transform);
+        //     Timer c_timer = newTimer.GetComponent<Timer>();
 
-                _StopTimer(t);
-                break;
-            }
-        }
+        //     if (textComponent != null)
+        //     {
+        //         c_timer.SetText(textComponent);
+        //     }
 
-        public void StartAll()
-        {
-            foreach (Timer t in inactiveTimers)
-            {
-                if (t.name != name) continue;
-
-                _StartTimer(t);
-                break;
-            }
-        }
-        
-        public void StopAll()
-        {
-            foreach (Timer t in inactiveTimers)
-            {
-                if (t.name != name) continue;
-
-                _StopTimer(t);
-                break;
-            }
-        }
-
-        void _StartTimer(Timer t)
-        {
-            t.Begin();
-            activeTimers.Add(t);
-            inactiveTimers.Remove(t);
-        }
-        
-        void _StopTimer(Timer t)
-        {
-            t.Stop();
-            activeTimers.Remove(t);
-            inactiveTimers.Add(t);
-        }
-
-        public void SetActive(Timer timer, bool value)
-        {
-
-        }
+        //     c_timer.Init(startingTimeInSeconds);
+        //     inactiveTimers.Add(c_timer);
+        //     return c_timer;
+        // }
     }
 }

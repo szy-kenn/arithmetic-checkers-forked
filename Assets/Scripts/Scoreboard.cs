@@ -16,7 +16,7 @@ namespace Damath
         void OnEnable()
         {
             Game.Events.OnMatchBegin += Init;
-            Game.Events.OnRulesetReturn -= ReceiveRuleset;
+            Game.Events.OnRulesetCreate -= ReceiveRuleset;
             Game.Events.OnPlayerCreate += AddPlayer;
             Game.Events.OnPieceCapture += Compute;
         }
@@ -24,7 +24,7 @@ namespace Damath
         void OnDisable()
         {
             Game.Events.OnMatchBegin -= Init;
-            Game.Events.OnRulesetReturn -= ReceiveRuleset;
+            Game.Events.OnRulesetCreate -= ReceiveRuleset;
             Game.Events.OnPlayerCreate -= AddPlayer;
             Game.Events.OnPieceCapture -= Compute;
         }
@@ -40,7 +40,10 @@ namespace Damath
                 }
             }
             
-            Console.Log($"[SCOREBOARD]: Done initialization " + this);
+            if (Settings.EnableDebugMode)
+            {
+                Game.Console.Log($"[SCOREBOARD]: Done initialization " + this);
+            }
         }
 
         public void ReceiveRuleset(Ruleset rules)
@@ -82,7 +85,7 @@ namespace Damath
                     break;
             }
 
-            Console.Log($"[ACTION]: {move.capturingPiece} captured {move.capturedPiece} for {score}");
+            Game.Console.Log($"[ACTION]: {move.capturingPiece} captured {move.capturedPiece} for {score}");
             move.SetScoreValue(score);
             AddScore(move.capturingPiece.owner, score);
             Refresh();

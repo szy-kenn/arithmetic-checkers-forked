@@ -4,13 +4,14 @@ using UnityEngine;
 
 namespace Damath
 {
+    public enum Gamemode {Classic, Speed, Custom}
+
     /// <summary>
     /// A ruleset defines the rules for a match.
     /// It is created and modified only in the Title Scene.
     /// </summary>
     public class Ruleset
     {
-        public enum Gamemode {Classic, Speed, Custom}
         public bool EnableCheats;
         public bool EnableMandatoryCapture;
         public bool EnableScoring;
@@ -20,8 +21,9 @@ namespace Damath
         public bool EnableTimer;
         public bool EnableTurnTimer;
         public bool EnableGlobalTimer;
-        public float turnTimerSeconds;
-        public float globalTimerSeconds;
+        public float GlobalTimerSeconds;
+        public float TurnTimerSeconds;
+        public Side FirstTurn;
 
         public Ruleset()
         {
@@ -64,8 +66,9 @@ namespace Damath
             EnableTimer = true;
             EnableTurnTimer = true;
             EnableGlobalTimer = true;
-            turnTimerSeconds = 60f;
-            globalTimerSeconds = 1200f;
+            GlobalTimerSeconds = 1200f;
+            TurnTimerSeconds = 60f;
+            FirstTurn = Side.Bot;
         }
 
         public void SetSpeed()
@@ -77,8 +80,9 @@ namespace Damath
             EnableTimer = true;
             EnableTurnTimer = true;
             EnableGlobalTimer = true;
-            turnTimerSeconds = 15f;
-            globalTimerSeconds = 300f;
+            GlobalTimerSeconds = 300f;
+            TurnTimerSeconds = 15f;
+            FirstTurn = Side.Bot;
         }
     }
 }

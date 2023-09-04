@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 public class Constants
 {
     public const int maximumColumns = 8;
@@ -10,6 +11,5 @@ public class Constants
     public const float cellZLocation = -3f;
 
     // Board size
-    public float[] boardDimensions = {0.03023016f, 0.03809f, 0.3809f};
-    
+    public float[] boardDimensions = {0.03023016f, 0.03809f, 0.3809f}; 
 }

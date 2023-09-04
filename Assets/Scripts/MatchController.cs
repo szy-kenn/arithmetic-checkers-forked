@@ -26,18 +26,13 @@ namespace Damath
         public bool TurnRequiresCapture = false;
         public List<Move> MandatoryMoves = new List<Move>();
         public bool EnablePlayerControls = false;
+        public Dictionary<(int, int), Cell> Cellmap = new();
         
         [Header("Objects")]
         public TimerManager TimerManager;
         public Cheats Cheats = null;
 
         [SerializeField] Player playerPrefab;
-
-        void Start()
-        {
-            Rules = Game.Main.ruleset ?? new Ruleset();
-            Init();
-        }
 
         void OnEnable()
         {
@@ -58,17 +53,38 @@ namespace Damath
             Game.Events.OnPieceDone -= ChangeTurns;
             Game.Events.OnCellReturn -= ReceiveCell;
         }
-        
+
+        void Start()
+        {
+            // Auto creates a classic match if none created upon starting
+            if (Game.Main.Ruleset == null)
+            {
+                Rules = new();
+                Game.Events.RulesetCreate(Rules);
+            }
+
+
+
+
+
+            Init();
+        }
+
+        void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+
+            }
+        }
+
         public void Init()
         {
             if (IsPlaying) return;
 
             CreatePlayers();
 
-            Game.Events.RulesetReturn(Rules);
-
             Game.Events.MatchBegin(this);
-
 
             // if (Rules.EnableCheats) Cheats.Init();
             Reset();
@@ -78,7 +94,7 @@ namespace Damath
         {
             IsPlaying = true;
             TurnNumber = 1;
-            TurnOf = Side.Bot;
+            TurnOf = Rules.FirstTurn;
             EnablePlayerControls = true;
         }
 
@@ -128,8 +144,7 @@ namespace Damath
         public void ClearValidMoves()
         {
             List<Move> moves = new();
-            Debug.Log("cleared");
-            Game.Events.UpdateMoves(moves);
+            Game.Events.BoardUpdateMoves(moves);
         }
 
         public void ClearValidMoves(Cell cell)
@@ -171,11 +186,21 @@ namespace Damath
             WhoClicked = player;
         }
 
+        public void SelectCellAsModerator(Cell cell)
+        {
+            
+        }
+
+
         public void SelectCell(int col, int row)
         {
             Game.Events.CellRequest(col, row); 
         }
 
+        /// <summary>
+        /// Main.
+        /// </summary>
+        /// <param name="cell"></param>
         public void SelectCell(Cell cell)
         {
             if (TurnOf != WhoClicked.Side)

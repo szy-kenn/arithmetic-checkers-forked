@@ -12,5 +12,10 @@ namespace Damath
         public static float soundVolume = 1.0f;
         public static float musicVolume = 1.0f;
         public static bool EnableAnimations = true;
+
+        public class KeyBinds
+        {
+            public static KeyCode OpenDeveloperConsole = KeyCode.BackQuote;
+        }
     }
 }

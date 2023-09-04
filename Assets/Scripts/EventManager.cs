@@ -18,8 +18,8 @@ namespace Damath
         public event Action OnMatchCreate;
         public event Action<MatchController> OnMatchBegin;
         public event Action OnMatchEnd;
-        public event Action OnRulesetRequest;
-        public event Action<Ruleset> OnRulesetReturn;
+        public event Action OnBoardCreate;
+        public event Action<Ruleset> OnRulesetCreate;
 
         #endregion
 
@@ -31,6 +31,7 @@ namespace Damath
         public event Action<Player> OnPlayerRelease;
         public event Action<Player> OnPlayerSelect;
         public event Action<Player> OnPlayerDeselect;
+        public event Action<Player> OnPlayerCommand;
 
         #endregion
         
@@ -45,7 +46,8 @@ namespace Damath
         public event Action<Move> OnPieceMove;
         public event Action<Piece> OnPieceDone;
         public event Action<Move> OnPieceCapture;
-        public event Action<List<Move>> OnUpdateMoves;
+        public event Action<List<Move>> OnBoardUpdateMoves;
+        public event Action<Dictionary<(int, int), Cell>> OnBoardUpdateCellmap;
         public event Action<MoveType> OnMoveTypeRequest;
         public event Action<bool> OnRequireCapture;
         public event Action OnRefresh;
@@ -70,21 +72,20 @@ namespace Damath
         #region Global event methods
         
         /// <summary>
-        /// Player click event.
+        /// Called when a match begins.
         /// </summary>
         public void MatchBegin(MatchController match)
         {
             OnMatchBegin?.Invoke(match);
         }
 
-        public void RulesetRequest(Ruleset rules)
+        /// <summary>
+        /// Called when a ruleset is created. 
+        /// </summary>
+        /// <param name="rules"></param>
+        public void RulesetCreate(Ruleset rules)
         {
-            OnRulesetRequest?.Invoke();
-        }
-
-        public void RulesetReturn(Ruleset rules)
-        {
-            OnRulesetReturn?.Invoke(rules);
+            OnRulesetCreate?.Invoke(rules);
         }
 
         #endregion
@@ -154,6 +155,14 @@ namespace Damath
             if (OnPlayerRelease != null)
             {
                 OnPlayerRelease(player);
+            }
+        }
+
+        public void PlayerCommand(Player player)
+        {
+            if (OnPlayerCommand != null)
+            {
+                OnPlayerCommand(player);
             }
         }
 
@@ -248,12 +257,20 @@ namespace Damath
         /// <summary>
         /// Called when the Board updates all its valid moves.
         /// </summary>
-        public void UpdateMoves(List<Move> moves)
+        public void BoardUpdateMoves(List<Move> moves)
         {
-            if (OnUpdateMoves != null)
+            if (OnBoardUpdateMoves != null)
             {
-                OnUpdateMoves(moves);
+                OnBoardUpdateMoves(moves);
             }
+        }
+        
+        /// <summary>
+        /// Called when the Board updates all its valid moves.
+        /// </summary>
+        public void BoardUpdateCellmap(Dictionary<(int, int), Cell> cellmap)
+        {
+            OnBoardUpdateCellmap?.Invoke(cellmap);
         }
         
         public void MoveTypeRequest(MoveType moveType)

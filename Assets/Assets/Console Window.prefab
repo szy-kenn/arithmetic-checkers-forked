@@ -838,12 +838,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '[Console]: Started console.
-
-    [Console]: Sample console message.
-
-    [Console]:
-    Very long sample console message.'
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 0f53e06b786e7cf4180b7f688728a9d8, type: 2}
   m_sharedMaterial: {fileID: -2960443674108680245, guid: 0f53e06b786e7cf4180b7f688728a9d8, type: 2}
@@ -1004,6 +999,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f110c5370a062454c83916213d3c3946, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  IsChoiceable: 0
   choices: []
   IsMenu: 0
   IsVisible: 0

@@ -21,9 +21,33 @@ namespace Damath
             this.name = $"Player ({Name})";
         }
 
+        void Awake()
+        {
+            Game.Events.OnMatchBegin += SetConsoleOperator;
+        }
+
         void Update()
         {
             DetectRaycast();
+
+            
+            // Debug
+            if (Input.GetKeyDown(KeyCode.F1))
+            {
+                if (!IsPlaying) return;
+                SetConsoleOperator();
+            }
+        }
+
+        void SetConsoleOperator()
+        {
+            Game.Console.SetOperator(this);
+            Debug.Log($"Set operator for {Game.Console} to {this}");
+        }
+
+        void SetConsoleOperator(MatchController match)
+        {
+            SetConsoleOperator();
         }
 
         public string SetName(string value)
