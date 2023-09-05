@@ -1,8 +1,5 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 namespace Damath
 {
@@ -15,26 +12,22 @@ namespace Damath
         
         [Header("Match")]
         public bool IsPlaying = false;
-        public Dictionary<Side, Player> Players = new Dictionary<Side, Player>();
+        public Dictionary<Side, Player> Players = new();
         public Player WhoClicked = null;
         public Cell SelectedCell = null;
         public Piece SelectedPiece = null;
         public Piece MovedPiece = null;
         public int TurnNumber;
         public Side TurnOf = Side.Bot;
-        public List<Move> ValidMoves = new List<Move>();
+        public List<Move> ValidMoves = new();
         public bool TurnRequiresCapture = false;
-        public List<Move> MandatoryMoves = new List<Move>();
+        public List<Move> MandatoryMoves = new();
         public bool EnablePlayerControls = false;
         public Dictionary<(int, int), Cell> Cellmap = new();
-        
-        [Header("Objects")]
-        public TimerManager TimerManager;
-        public Cheats Cheats = null;
 
         [SerializeField] Player playerPrefab;
 
-        void OnEnable()
+        void Awake()
         {
             Game.Events.OnPlayerSelect += SetPlayerClicker;
             Game.Events.OnCellSelect += SelectCell;
@@ -62,11 +55,6 @@ namespace Damath
                 Rules = new();
                 Game.Events.RulesetCreate(Rules);
             }
-
-
-
-
-
             Init();
         }
 
@@ -78,6 +66,7 @@ namespace Damath
             }
         }
 
+
         public void Init()
         {
             if (IsPlaying) return;
@@ -86,7 +75,6 @@ namespace Damath
 
             Game.Events.MatchBegin(this);
 
-            // if (Rules.EnableCheats) Cheats.Init();
             Reset();
         }
 
@@ -186,17 +174,6 @@ namespace Damath
             WhoClicked = player;
         }
 
-        public void SelectCellAsModerator(Cell cell)
-        {
-            
-        }
-
-
-        public void SelectCell(int col, int row)
-        {
-            Game.Events.CellRequest(col, row); 
-        }
-
         /// <summary>
         /// Main.
         /// </summary>
@@ -213,7 +190,7 @@ namespace Damath
             // Cell has piece
             if (cell.HasPiece)
             {   
-                if (WhoClicked.Side != cell.piece.side)
+                if (WhoClicked.Side != cell.Piece.Side)
                 {
                     Game.Events.CellDeselect(cell);
                     return;
@@ -228,9 +205,9 @@ namespace Damath
 
                 if (TurnRequiresCapture)
                 {
-                    if (cell.piece.CanCapture)
+                    if (cell.Piece.CanCapture)
                     {
-                        SelectPiece(SelectedCell.piece);
+                        SelectPiece(SelectedCell.Piece);
                     } else
                     {
                         Game.Events.CellDeselect(cell);
@@ -238,7 +215,7 @@ namespace Damath
                     }
                 } else
                 {
-                    SelectPiece(SelectedCell.piece);
+                    SelectPiece(SelectedCell.Piece);
                 }
                 return;
 
@@ -258,6 +235,7 @@ namespace Damath
         public void SelectPiece(Piece piece)
         {
             Game.Events.PieceSelect(piece);
+            Game.Audio.PlaySound("Select");
         }
 
         /// <summary>
@@ -266,16 +244,17 @@ namespace Damath
         public void SelectMove(Cell cell)
         {
             Game.Events.MoveSelect(cell);
+            Game.Audio.PlaySound("Move");
         }
 
         public void CheckForKing(Piece piece)
         {
-            if (piece.side == Side.Bot)
+            if (piece.Side == Side.Bot)
             {
-                if (piece.row == 7) piece.Promote();
+                if (piece.Row == 7) piece.Promote();
             } else
             {
-                if (piece.row == 0) piece.Promote();
+                if (piece.Row == 0) piece.Promote();
             }
         }
 

@@ -1,15 +1,22 @@
 using System.Collections.Generic;
-public class Constants
-{
-    public const int maximumColumns = 8;
-    public const int maximumRows = 8;
-    public const float pieceScale = 2.5f;
-    public const float cellSize = 2.5f;
-    public const float cellOffset = 1.5f;
-    public const float zLocation = -3f;
-    public const float pieceZLocation = -2f;
-    public const float cellZLocation = -3f;
 
-    // Board size
-    public float[] boardDimensions = {0.03023016f, 0.03809f, 0.3809f}; 
+namespace Damath
+{
+    public enum Side {Bot, Top, Spectator}
+
+    public class Constants
+    {
+        public const int MaximumColumns = 8;
+        public const int MaximumRows = 8;
+        public const float PieceScale = 2.5f;
+        public const float CellSize = 2.5f;
+        public const float CellOffset = 1.5f;
+        public const float ZLocation = -3f;
+        public const float PieceZLocation = -2f;
+        public const float CellZLocation = -3f;
+
+        // Board size
+        public float[] BoardDimensions = {0.03023016f, 0.03809f, 0.3809f}; 
+        
+    }
 }

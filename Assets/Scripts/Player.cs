@@ -11,6 +11,7 @@ namespace Damath
         public Side Side;
         public int PieceCount = 0;
         public float Score = 0f;
+        public bool IsControllable = true;
         public bool IsPlaying = false;
         public bool IsModerator = false;
         public bool IsAI = false;
@@ -52,26 +53,24 @@ namespace Damath
 
         public string SetName(string value)
         {
-            this.name = $"Player {value}";
-            this.Name = name;
+            name = $"Player {value}";
+            Name = value;
             return value;
         }
 
-        public bool SetPlaying(bool value)
+        public void SetPlaying(bool value)
         {
-            this.IsPlaying = value;
-            return value;
+            IsPlaying = value;
         }
 
-        public Side SetSide(Side value)
+        public void SetSide(Side value)
         {
-            this.Side = value;
-            return value;
+            Side = value;
         }
 
         public void SetScore(float value)
         {
-            this.Score = value;
+            Score = value;
         }
 
         void DetectRaycast()
@@ -95,35 +94,12 @@ namespace Damath
 
             if (Input.GetMouseButtonDown(1))
             {
-                Game.Events.PlayerClick(this);
+                Game.Events.PlayerRightClick(this);
 
                 RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
                 if (hit.collider == null) return;
-                if (!IsModerator)
-                {
-                    Click(hit);
-                    return;
-                }
 
-                // switch (hit.collider.tag)
-                // {
-                //     case "Cell":
-                //         selectedCell = hit.collider.gameObject.GetComponent<Cell>();
-
-                //         if (Game.Main.Match.Rules.EnableCheats)
-                //         {
-                //             Game.Main.Match.Cheats.Select(selectedCell); 
-                //             Game.Main.Match.Cheats.CreatePieceMenu();
-                //         }
-                //         break;
-
-                //     case "Background":
-                //         Game.Main.Match.Cheats.CreateToolsMenu(); 
-                //         break;
-
-                //     default:
-                //         break;
-                // }
+                Click(hit);
             }
         }
 
@@ -131,7 +107,7 @@ namespace Damath
         {
             Game.Events.PlayerSelect(this);
 
-            if (hit.collider.tag == "Cell")
+            if (hit.collider.CompareTag("Cell"))
             {
                 SelectedCell = hit.collider.gameObject.GetComponent<Cell>();
 

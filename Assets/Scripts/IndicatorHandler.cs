@@ -157,7 +157,7 @@ namespace Damath
             newIndicator.transform.SetParent(this.transform);
             newIndicator.transform.position = cell.transform.position;
             // newIndicator.transform.localScale = new Vector3(1f, 1f, 1f);
-            (c_indicator.Col, c_indicator.Row) = (cell.col, cell.row);
+            (c_indicator.Col, c_indicator.Row) = (cell.Col, cell.Row);
             c_indicator.ForceDisplay = ForceDisplay;
             c_spriteRenderer.color = color;
             newIndicator.SetActive(true);
@@ -177,7 +177,7 @@ namespace Damath
             newIndicator.transform.SetParent(this.transform);
             newIndicator.transform.position = cell.transform.position;
             // newIndicator.transform.localScale = new Vector3(1f, 1f, 1f);
-            (c_indicator.Col, c_indicator.Row) = (cell.col, cell.row);
+            (c_indicator.Col, c_indicator.Row) = (cell.Col, cell.Row);
             c_indicator.ForceDisplay = ForceDisplay;
             c_spriteRenderer.color = color;
             newIndicator.SetActive(true);

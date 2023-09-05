@@ -10,7 +10,7 @@ namespace Damath
     public class UIHandler : MonoBehaviour
     {
         public static UIHandler Main;
-        [SerializeField] Canvas Canvas;
+        public Canvas Canvas;
         public List<Sprite> icons;
         public Dictionary<string, Sprite> dicons = new Dictionary<string, Sprite>();
 

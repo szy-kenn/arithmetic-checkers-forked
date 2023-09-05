@@ -4,37 +4,13 @@ namespace Damath
 {
     public class TitleScene : MonoBehaviour
     {
-        protected Ruleset ruleset = null;
-
-        void Awake()
-        {
-
-        }
-
-        public void SetRuleset(Ruleset ruleset)
-        {
-            this.ruleset = ruleset;
-        }
-
         void Update()
         {
-            if (Input.GetKeyDown(KeyCode.F1))
-            {
-                this.ruleset = new Ruleset(Ruleset.Type.Standard);
-                Game.Console.Log("Created ruleset \"Classic\".");
-            }
-
-            if (Input.GetKeyDown(KeyCode.F2))
-            {
-                this.ruleset = new Ruleset(Ruleset.Type.Speed);
-                Game.Console.Log("Created ruleset \"Speed\".");
-            }
-
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                if (!Game.Main.HasMatch && ruleset != null)
+                if (Game.Main.Ruleset == null)
                 {
-                    Game.Main.CreateMatch(ruleset, start: true);
+                    Game.Main.CreateMatch(Ruleset.Type.Standard, start: true);
                 }
             }
         }

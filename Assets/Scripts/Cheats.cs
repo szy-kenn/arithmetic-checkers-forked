@@ -1,50 +1,85 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.Events;
 
 namespace Damath
 {
     public class Cheats : MonoBehaviour
     {
-        public Window pieceMenu = null;
-        public Window toolsMenu = null;
-        public Cell selectedCell;
+        public Ruleset Rules { get; private set; }
+        public Window PieceMenu = null;
+        public Window ToolsMenu = null;
+        public Cell SelectedCell;
         public bool EnableDebug = true;
+        public Player WhoClicked = null;
+
+        void Awake()
+        {
+            Game.Events.OnRulesetCreate += ReceiveRuleset;
+            Game.Events.OnMatchBegin += Init;
+            Game.Events.OnPlayerRightClick += CreateMenu;
+            Game.Events.OnCellSelect += SelectCell;
+        }
+        
+        void OnDisable()
+        {
+            Game.Events.OnRulesetCreate -= ReceiveRuleset;
+            Game.Events.OnMatchBegin -= Init;
+            Game.Events.OnPlayerRightClick -= CreateMenu;
+            Game.Events.OnCellSelect -= SelectCell;
+        }
+
+        void ReceiveRuleset(Ruleset ruleset)
+        {
+            if (Settings.EnableDebugMode)
+            {
+                Game.Console.Log($"[CHEATS] Received ruleset");
+            }
+            Rules = ruleset;
+        }
+        
+        public void Init()
+        {
+            if (Rules.EnableCheats)
+            {
+                Game.Console.Log($"[CHEATS]: Cheats enabled for this match.");
+            }
+        }
+
+        public void Init(MatchController match)
+        {
+            Init();
+        }
 
         #region Listener Functions
 
         public void AddPiece()
         {
-            if (selectedCell.piece == null)
+            if (SelectedCell.Piece == null)
             {
                 
             }
         }
         public void RemovePiece()
         {
-            if (selectedCell.piece != null)
+            if (SelectedCell.Piece != null)
             {
-                Debug.Log($"[CHEATS]: Removed {selectedCell.piece}");
-                selectedCell.piece.Remove();
+                Debug.Log($"[CHEATS]: Removed {SelectedCell.Piece}");
+                SelectedCell.Piece.Remove();
             }
         }
         public void Promote()
         {
-            if (selectedCell.piece != null)
+            if (SelectedCell.Piece != null)
             {
-                Debug.Log($"[CHEATS]: Promoted {selectedCell.piece}");
-                selectedCell.piece.Promote();
+                Debug.Log($"[CHEATS]: Promoted {SelectedCell.Piece}");
+                SelectedCell.Piece.Promote();
             }
         }
         public void Demote()
         {
-            if (selectedCell.piece != null)
+            if (SelectedCell.Piece != null)
             {
-                Debug.Log($"[CHEATS]: Demoted {selectedCell.piece}");
-                selectedCell.piece.Demote();
+                Debug.Log($"[CHEATS]: Demoted {SelectedCell.Piece}");
+                SelectedCell.Piece.Demote();
             }
         }
         public void RemoveAll()
@@ -70,65 +105,61 @@ namespace Damath
         }
         #endregion
 
-        public void Init()
-        {        
-            Debug.Log($"[CHEATS]: Enabled cheats");
+        public void SelectCell(Cell cell)
+        {
+            SelectedCell = cell;
         }
 
-        public void Select(Cell cell)
+        public void CreateMenu(Player player)
         {
-            selectedCell = cell;
-        }
-
-        public void CreatePieceMenu()
-        {
-            if (toolsMenu != null) toolsMenu.Close();
-            if (pieceMenu != null)
+            if (!player.IsModerator) return;
+            if (ToolsMenu != null) ToolsMenu.Close();
+            if (PieceMenu != null)
             {
-                Destroy(pieceMenu.gameObject);
-                pieceMenu = UIHandler.Main.CreateWindow();
+                Destroy(PieceMenu.gameObject);
+                PieceMenu = UIHandler.Main.CreateWindow();
             } else
             {
-                pieceMenu = UIHandler.Main.CreateWindow();
+                PieceMenu = UIHandler.Main.CreateWindow();
             }
 
-            if (selectedCell.piece == null)
+            if (SelectedCell.Piece == null)
             {
-                pieceMenu.AddChoice(AddPiece, "Add Piece", UIHandler.Main.icons[0]);
+                PieceMenu.AddChoice(AddPiece, "Add Piece", UIHandler.Main.icons[0]);
             } else
             {
-                pieceMenu.AddChoice(RemovePiece, "Remove Piece", UIHandler.Main.icons[1]);
+                PieceMenu.AddChoice(RemovePiece, "Remove Piece", UIHandler.Main.icons[1]);
 
-                if (!selectedCell.piece.IsKing)
+                if (!SelectedCell.Piece.IsKing)
                 {
-                    pieceMenu.AddChoice(Promote, "Promote", UIHandler.Main.icons[2]);
+                    PieceMenu.AddChoice(Promote, "Promote", UIHandler.Main.icons[2]);
                 } else
                 {
-                    pieceMenu.AddChoice(Demote, "Demote", UIHandler.Main.icons[3]);
+                    PieceMenu.AddChoice(Demote, "Demote", UIHandler.Main.icons[3]);
                 }
             }
-            pieceMenu.Open(Input.mousePosition);
+            PieceMenu.Open(Input.mousePosition);
         }
 
         public void CreateToolsMenu()
         {
-            if (pieceMenu != null) pieceMenu.Close();
-            if (toolsMenu != null)
+            if (PieceMenu != null) PieceMenu.Close();
+            if (ToolsMenu != null)
             {
-                Destroy(toolsMenu.gameObject);
-                toolsMenu = UIHandler.Main.CreateWindow();
+                Destroy(ToolsMenu.gameObject);
+                ToolsMenu = UIHandler.Main.CreateWindow();
             } else
             {
-                toolsMenu = UIHandler.Main.CreateWindow();
+                ToolsMenu = UIHandler.Main.CreateWindow();
             }
 
             if (EnableDebug)
             {
-                toolsMenu.AddChoice(RemoveAll, "Remove All");
-                toolsMenu.AddChoice(PromoteAll, "Promote All");
-                toolsMenu.AddChoice(DemoteAll, "Demote All");
+                ToolsMenu.AddChoice(RemoveAll, "Remove All");
+                ToolsMenu.AddChoice(PromoteAll, "Promote All");
+                ToolsMenu.AddChoice(DemoteAll, "Demote All");
             }
-            toolsMenu.Open(Input.mousePosition);
+            ToolsMenu.Open(Input.mousePosition);
         }
     }
 }

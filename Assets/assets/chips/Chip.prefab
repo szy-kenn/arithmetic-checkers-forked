@@ -195,23 +195,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44b7cb6a9b13a3a44b23ac51f72ac621, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  owner: {fileID: 0}
-  cell: {fileID: 0}
-  col: 0
-  row: 0
-  position: {x: 0, y: 0, z: 0}
-  value: 2
-  side: 0
-  color: {r: 0.24313727, g: 0.24313727, b: 0.24313727, a: 0}
-  shadow: {r: 0, g: 0, b: 0, a: 0}
+  Owner: {fileID: 0}
+  Cell: {fileID: 0}
+  Col: 0
+  Row: 0
+  Position: {x: 0, y: 0, z: 0}
+  Value: 
+  Side: 0
+  Color: {r: 0, g: 0, b: 0, a: 0}
+  Shadow: {r: 0, g: 0, b: 0, a: 0}
   IsKing: 0
   CanCapture: 0
   HasCaptured: 0
-  forward: 0
-  sprites:
+  Forward: 0
+  Sprites:
   - {fileID: 21300000, guid: abedf3bb648bfc34a94f6535be18171d, type: 3}
   - {fileID: 21300000, guid: b1643ad483c5594479ca0d9555bf2865, type: 3}
-  - {fileID: 21300000, guid: 871845a5272759d4396036d6ba71ee05, type: 3}
 --- !u!1 &7103881841409839295
 GameObject:
   m_ObjectHideFlags: 0

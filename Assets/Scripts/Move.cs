@@ -13,7 +13,7 @@ namespace Damath
         public Piece capturingPiece = null;
         public Piece capturedPiece = null;
         public bool HasCapture = false;
-        public float score = 0;
+        public float Score = 0;
         public MoveType type;
 
         public Move(Cell origin, Cell destination)
@@ -21,7 +21,7 @@ namespace Damath
             originCell = origin; from = originCell;
             destinationCell = destination; to = destinationCell;
             destinationCell.IsValidMove = true;
-            capturingPiece = origin.piece;
+            capturingPiece = origin.Piece;
             type = MoveType.Normal;
         }
         
@@ -30,7 +30,7 @@ namespace Damath
             originCell = origin; from = originCell;
             destinationCell = destination; to = destinationCell;
             destinationCell.IsValidMove = true;
-            capturingPiece = origin.piece;
+            capturingPiece = origin.Piece;
             capturedPiece = toCapture;
             HasCapture = true;
             type = MoveType.Capture;
@@ -38,7 +38,7 @@ namespace Damath
 
         public void SetScoreValue(float value)
         {
-            this.score = value;
+            Score = value;
         }
     }
 }

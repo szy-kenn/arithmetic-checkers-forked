@@ -62,7 +62,7 @@ namespace Damath
         {
             TimeSpan time = TimeSpan.FromSeconds(currentTime);
 
-            return time.ToString("ss");
+            return time.ToString("%s");
         }
         
         public void Begin()

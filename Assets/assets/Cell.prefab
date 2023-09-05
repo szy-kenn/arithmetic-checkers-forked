@@ -103,12 +103,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 243053ca10e9922489c21b28e7c7f6fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  number: 0
-  col: 0
-  row: 0
-  piece: {fileID: 0}
-  operation: 0
-  sprite:
+  Col: 0
+  Row: 0
+  Piece: {fileID: 0}
+  HasPiece: 0
+  IsValidMove: 0
+  Operation: 0
+  Sprite:
   - {fileID: 21300000, guid: adad238de694fe246b43c4ca1f256d6a, type: 3}
   - {fileID: 21300000, guid: 7ad776be27f3e2643b0f07d398746961, type: 3}
   - {fileID: 21300000, guid: a54afdbea45716b48a929aae579cd29b, type: 3}

@@ -5,10 +5,6 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 using TMPro;
-using Unity.Collections;
-using Unity.VisualScripting;
-using System.Data;
-using System.Text.RegularExpressions;
 
 namespace Damath
 {
@@ -82,10 +78,12 @@ namespace Damath
             {
                 Main = this;
             }
+            
         }
 
         public void OnEnable()
         {
+            
         }
         
         public void OnDisable()
@@ -106,7 +104,6 @@ namespace Damath
 
         void ReceiveMatchInstance(MatchController match)
         {
-            Debug.Log("received " + match);
             Match = match;
         }
 
@@ -130,7 +127,7 @@ namespace Damath
         {
             SubscribeToEvents();
             CreateWindow();
-            input = Window.transform.Find("Input").GetComponent<TMP_InputField>();
+            input = Window.transform.Find("Input").GetComponent<TMPro.TMP_InputField>();
             messages = Window.transform.Find("Message").GetComponent<TextMeshProUGUI>();
 
             input.onSubmit.AddListener(new UnityAction<string>(GetCommand)); 
@@ -333,15 +330,15 @@ namespace Damath
         {
             if (args[1] == "create")
             {
-                if (args[2] == "classic")
+                if (args[2] == "standard")
                 {
-                    Game.Main.CreateMatch(new Ruleset(Ruleset.Type.Standard));
+                    Game.Main.CreateMatch(Ruleset.Type.Standard);
                 } else if (args[2] == "speed")
                 {
-                    Game.Main.CreateMatch(new Ruleset(Ruleset.Type.Speed));
+                    Game.Main.CreateMatch(Ruleset.Type.Speed);
                 } else if (args[3] == "custom")
                 {
-                    Game.Main.CreateMatch(new Ruleset(Ruleset.Type.Custom));
+                    Game.Main.CreateMatch(Ruleset.Type.Custom);
                 } else
                 {
                     PromptInvalid(args[0]);

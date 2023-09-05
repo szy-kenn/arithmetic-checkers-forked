@@ -8,13 +8,12 @@ namespace Damath
 
     public class Cell : MonoBehaviour
     {
-        public int number;
-        public int col, row;
-        public Piece piece = null;
+        public int Col, Row;
+        public Piece Piece = null;
         public bool HasPiece = false;
         public bool IsValidMove = false;
-        public Operation operation;
-        public List<Sprite> sprite;
+        public Operation Operation;
+        public List<Sprite> Sprite;
 
         SpriteRenderer spriteRenderer;
 
@@ -30,21 +29,21 @@ namespace Damath
 
         public void SetOperation(Operation value)
         {
-            operation = value;
+            Operation = value;
 
             switch (value)
             {
                 case Operation.Add:
-                    spriteRenderer.sprite = sprite[0]; 
+                    spriteRenderer.sprite = Sprite[0]; 
                     break;
                 case Operation.Sub:
-                    spriteRenderer.sprite = sprite[1]; 
+                    spriteRenderer.sprite = Sprite[1]; 
                     break;
                 case Operation.Mul:
-                    spriteRenderer.sprite = sprite[2]; 
+                    spriteRenderer.sprite = Sprite[2]; 
                     break;
                 case Operation.Div:
-                    spriteRenderer.sprite = sprite[3]; 
+                    spriteRenderer.sprite = Sprite[3]; 
                     break;
                 default:
                     spriteRenderer.sprite = null; 
@@ -55,15 +54,15 @@ namespace Damath
 
         public void SetColRow(int colValue, int rowValue)
         {
-            col = colValue;
-            row = rowValue;
+            Col = colValue;
+            Row = rowValue;
         }
 
         public Piece GetPiece()
         {
-            if( piece != null)
+            if(Piece != null)
             {
-                return piece;
+                return Piece;
             }
             return null;
         }
@@ -72,13 +71,13 @@ namespace Damath
         {
             if (piece == null) return;
             
-            this.piece = piece;
+            Piece = piece;
             HasPiece = true;
         }
         
         public void RemovePiece()
         {
-            piece = null;
+            Piece = null;
             HasPiece = false;
         }
     }

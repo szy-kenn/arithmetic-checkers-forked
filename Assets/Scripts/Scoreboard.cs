@@ -67,10 +67,10 @@ namespace Damath
         {
             float score;
             char operation;
-            float x = float.Parse(move.capturingPiece.value);
-            float y = float.Parse(move.capturedPiece.value);
+            float x = float.Parse(move.capturingPiece.Value);
+            float y = float.Parse(move.capturedPiece.Value);
 
-            (score, operation) = move.destinationCell.operation switch
+            (score, operation) = move.destinationCell.Operation switch
             {
                 Operation.Add => (x + y, '+'),
                 Operation.Sub => (x - y, '-'),
@@ -79,10 +79,10 @@ namespace Damath
                 _ => throw new NotImplementedException(),
             };
 
-            Game.Console.Log($"[ACTION]: {move.capturingPiece.value} {operation} {move.capturedPiece.value} = {score}");
+            Game.Console.Log($"[ACTION]: {move.capturingPiece.Value} {operation} {move.capturedPiece.Value} = {score}");
 
             move.SetScoreValue(score);
-            AddScore(move.capturingPiece.owner, score);
+            AddScore(move.capturingPiece.Owner, score);
             Refresh();
         }
 

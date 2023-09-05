@@ -1,9 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
-using TMPro;
-using Unity.VisualScripting;
 
 namespace Damath
 {
@@ -19,11 +14,6 @@ namespace Damath
 
         void Awake()
         {
-            
-        }
-
-        void OnEnable()
-        {
             Game.Events.OnRulesetCreate += ReceiveRuleset;
             Game.Events.OnMatchBegin += Init;
             Game.Events.OnChangeTurn += SwapTurnTimer;
@@ -36,14 +26,13 @@ namespace Damath
             Game.Events.OnChangeTurn -= SwapTurnTimer;
         }
 
-        void Update()
+        void ReceiveRuleset(Ruleset value)
         {
-
-        }
-
-        void ReceiveRuleset(Ruleset rules)
-        {
-            Rules = rules;
+            if (Settings.EnableDebugMode)
+            {
+                Game.Console.Log($"[DEBUG]: Received ruleset");
+            }
+            Rules = value;
         }
         
         public void Init()

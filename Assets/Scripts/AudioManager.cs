@@ -7,7 +7,7 @@ namespace Damath
     public class AudioManager : MonoBehaviour
     {
         public static AudioManager Main { get; private set; }
-        public Dictionary<string, AudioSource> sources = new Dictionary<string, AudioSource>();
+        public Dictionary<string, AudioSource> Sources = new();
         public float defaultVolume = 1f;
 
         void Awake()
@@ -21,14 +21,26 @@ namespace Damath
             }
         }
 
+        void Start()
+        {
+            foreach (Transform audioSource in transform)
+            {
+                if (Settings.EnableDebugMode)
+                {
+                    Debug.Log($"Loaded audio {audioSource.name}");
+                }
+                AddSource(audioSource.name, audioSource.GetComponent<AudioSource>());
+            }
+        }
+
         public void AddSource(string name, AudioSource audioSource)
         {
-            sources.Add(name, audioSource);
+            Sources.Add(name, audioSource);
         }
 
         public void PlaySound(string name)
         {
-            sources[name].Play();
+            Sources[name].Play();
         }
     }
 }

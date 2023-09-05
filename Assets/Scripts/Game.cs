@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -41,7 +40,7 @@ namespace Damath
             if (Input.GetKeyDown(Settings.KeyBinds.OpenDeveloperConsole))
             {
                 if (!Settings.EnableConsole) return;
-                Game.Console.Window.Toggle();
+                Console.Window.Toggle();
             }
         }
 
@@ -88,10 +87,16 @@ namespace Damath
         /// <summary>
         /// Creates a match given a ruleset.
         /// </summary>
-        public void CreateMatch(Ruleset ruleset, bool start = false)
+        public void CreateMatch(Ruleset.Type value, bool start = false)
         {
-            Ruleset = ruleset;
-            Game.Events.RulesetCreate(ruleset);
+            Ruleset = new Ruleset(value);
+            Events.RulesetCreate(Ruleset);
+
+            if (Settings.EnableDebugMode)
+            {
+                Console.Log($"[DEBUG]: Created ruleset");
+            }
+
             if (start) StartMatch();
         }
 

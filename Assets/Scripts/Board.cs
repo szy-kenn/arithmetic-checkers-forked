@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -50,7 +48,7 @@ namespace Damath
             Game.Events.OnMoveSelect += SelectMove;
             Game.Events.OnMoveTypeRequest += UpdateMoveType;
             Game.Events.OnRequireCapture += UpdateRequireCaptureState;
-            Game.Events.OnBoardUpdateMoves += UpdateMoves;
+            Game.Events.OnBoardUpdateMoves += UpdateValidMoves;
             Game.Events.OnPieceMove += MovePiece;
             Game.Events.OnPlayerCreate += AddPlayer;
             Game.Events.OnPieceCapture += CapturePiece;
@@ -66,7 +64,7 @@ namespace Damath
             Game.Events.OnMoveSelect -= SelectMove;
             Game.Events.OnMoveTypeRequest -= UpdateMoveType;
             Game.Events.OnRequireCapture -= UpdateRequireCaptureState;
-            Game.Events.OnBoardUpdateMoves -= UpdateMoves;
+            Game.Events.OnBoardUpdateMoves -= UpdateValidMoves;
             Game.Events.OnPieceMove -= MovePiece;
             Game.Events.OnPlayerCreate -= AddPlayer;
             Game.Events.OnPieceCapture -= CapturePiece;
@@ -101,18 +99,18 @@ namespace Damath
                     newCell.transform.SetParent(grid.transform);
                     
                     var rect = newCell.GetComponent<RectTransform>();
-                    float cellPositionX = col * Constants.cellSize + Constants.cellOffset;
-                    float cellPositionY = row * Constants.cellSize + Constants.cellOffset;
+                    float cellPositionX = col * Constants.CellSize + Constants.CellOffset;
+                    float cellPositionY = row * Constants.CellSize + Constants.CellOffset;
                     rect.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(cellPositionX - 0.25f,
                                                                                         cellPositionY - 0.25f,
                                                                                         0); // Idk why, but I didn't have to subtract .25 from this before
-                    rect.GetComponent<RectTransform>().localScale = new Vector2(Constants.cellSize, Constants.cellSize);
+                    rect.GetComponent<RectTransform>().localScale = new Vector2(Constants.CellSize, Constants.CellSize);
                     
                     newCell.SetColRow(col, row);
-                    // if (Rules.SymbolMap.Symbols.ContainsKey((col, row)))
-                    // {
-                    //     newCell.SetOperation(Rules.SymbolMap.Symbols[(col, row)]);
-                    // }
+                    if (Rules.Symbols.Map.ContainsKey((col, row)))
+                    {
+                        newCell.SetOperation(Rules.Symbols.Map[(col, row)]);
+                    }
                     Cellmap[(col, row)] = newCell;
                 }
             }
@@ -129,36 +127,36 @@ namespace Damath
             GameObject pieceGroup = new("Pieces");
             pieceGroup.transform.SetParent(grid.transform);
 
-            // foreach (var pieceData in Rules.PieceMap.Pieces)
-            // {
-            //     int col = pieceData.Key.Item1;
-            //     int row = pieceData.Key.Item2;
-            //     Side side = pieceData.Value.Item1;
-            //     string value = pieceData.Value.Item2;
-            //     bool IsKing = pieceData.Value.Item3;
+            foreach (var pieceData in Rules.Pieces.Map)
+            {
+                int col = pieceData.Key.Item1;
+                int row = pieceData.Key.Item2;
+                Side side = pieceData.Value.Item1;
+                string value = pieceData.Value.Item2;
+                bool IsKing = pieceData.Value.Item3;
                 
-            //     Cell cell = GetCell(col, row);
+                Cell cell = GetCell(col, row);
     
-            //     Piece newPiece = Instantiate(piecePrefab, new Vector3(col, row, 0), Quaternion.identity);
-            //     newPiece.name = $"Piece ({value})";
-            //     newPiece.transform.SetParent(pieceGroup.transform);
-            //     newPiece.transform.position = cell.transform.position;
+                Piece newPiece = Instantiate(piecePrefab, new Vector3(col, row, 0), Quaternion.identity);
+                newPiece.name = $"Piece ({value})";
+                newPiece.transform.SetParent(pieceGroup.transform);
+                newPiece.transform.position = cell.transform.position;
 
-            //     newPiece.SetCell(cell);
-            //     newPiece.SetOwner(Players[side]);
-            //     newPiece.SetTeam(side);
-            //     if (side == Side.Bot)
-            //     {
-            //         newPiece.SetColor(Theme.botChipColor, Theme.botChipShadow);
-            //     } else
-            //     {
-            //         newPiece.SetColor(Theme.topChipColor, Theme.topChipShadow);
-            //     }
-            //     newPiece.SetValue(value);
-            //     newPiece.SetKing(IsKing);
+                newPiece.SetCell(cell);
+                newPiece.SetOwner(Players[side]);
+                newPiece.SetTeam(side);
+                if (side == Side.Bot)
+                {
+                    newPiece.SetColor(Theme.botChipColor, Theme.botChipShadow);
+                } else
+                {
+                    newPiece.SetColor(Theme.topChipColor, Theme.topChipShadow);
+                }
+                newPiece.SetValue(value);
+                newPiece.SetKing(IsKing);
 
-            //     cell.SetPiece(newPiece);
-            // }
+                cell.SetPiece(newPiece);
+            }
         }
         #endregion
 
@@ -171,7 +169,16 @@ namespace Damath
             Players.Add(player.Side, player);
         }
 
-        public void UpdateMoves(List<Move> moves)
+        public void ClearValidMoves()
+        {
+            foreach (var move in ValidMoves)
+            {
+                move.destinationCell.IsValidMove = false;
+            }
+            ValidMoves = new();
+        }
+
+        public void UpdateValidMoves(List<Move> moves)
         {
             this.ValidMoves = moves;
         }
@@ -233,9 +240,9 @@ namespace Damath
         /// </summary>
         public void MovePiece(Move move)
         {
-            Game.Console.Log($"[ACTION]: Moved {SelectedPiece.value}: ({move.originCell.col}, {move.originCell.row}) -> ({move.destinationCell.col}, {move.destinationCell.row})");
+            Game.Console.Log($"[ACTION]: Moved {SelectedPiece.Value}: ({move.originCell.Col}, {move.originCell.Row}) -> ({move.destinationCell.Col}, {move.destinationCell.Row})");
 
-            Piece pieceToMove = move.originCell.piece;
+            Piece pieceToMove = move.originCell.Piece;
 
             AnimateMovedPiece(move);
 
@@ -254,15 +261,15 @@ namespace Damath
         public void AnimateMovedPiece(Move move)
         {
             // Swap pieces
-            (move.originCell.piece, move.destinationCell.piece) = (move.destinationCell.piece, move.originCell.piece);
+            (move.originCell.Piece, move.destinationCell.Piece) = (move.destinationCell.Piece, move.originCell.Piece);
             // Reinitialization
             move.originCell.HasPiece = false;
             move.destinationCell.HasPiece = true;
 
-            move.destinationCell.piece.col = move.destinationCell.col;
-            move.destinationCell.piece.row = move.destinationCell.row;
+            move.destinationCell.Piece.Col = move.destinationCell.Col;
+            move.destinationCell.Piece.Row = move.destinationCell.Row;
 
-            LeanTween.move(move.destinationCell.piece.gameObject, move.destinationCell.transform.position, 0.5f).setEaseOutExpo();
+            LeanTween.move(move.destinationCell.Piece.gameObject, move.destinationCell.transform.position, 0.5f).setEaseOutExpo();
         }
         
         /// <summary>
@@ -270,6 +277,8 @@ namespace Damath
         /// </summary>
         public void CapturePiece(Move move)
         {
+            Game.Audio.PlaySound("Capture");
+
             Debug.Log($"[ACTION]: {move.capturingPiece} captured {move.capturedPiece}");
 
             AnimateCapturedPiece(move);
@@ -293,7 +302,7 @@ namespace Damath
         {
             Piece capturedPiece = move.capturedPiece;
 
-            if (capturedPiece.side == Side.Bot)
+            if (capturedPiece.Side == Side.Bot)
             {
                 RectTransform rect = capturedPiece.GetComponent<RectTransform>();
 
@@ -323,7 +332,7 @@ namespace Damath
         /// </summary>
         public void CheckPiece(Piece piece)
         {
-            List<Move> moves = new();
+            List<Move> moves;
 
             CheckForKing(piece);
             // Check if moved piece is able to be captured
@@ -368,19 +377,19 @@ namespace Damath
         {
             List<Move> moves = new();
 
-            for (int col = piece.col - 1 ;  col < piece.col + 2 ; col += 2)
+            for (int col = piece.Col - 1 ;  col < piece.Col + 2 ; col += 2)
             {
                 if (col < 0 || col > 7) continue;
 
-                for (int row = piece.row - 1 ;  row < piece.row + 2 ; row += 2)
+                for (int row = piece.Row - 1 ;  row < piece.Row + 2 ; row += 2)
                 {
                     if (row < 0 || row > 7) continue;
 
                     Cell cellToCheck = GetCell(col, row);
 
-                    if (cellToCheck.piece != null)
+                    if (cellToCheck.Piece != null)
                     {
-                        moves.AddRange(GetPieceMoves(cellToCheck.piece, MoveType.Capture));
+                        moves.AddRange(GetPieceMoves(cellToCheck.Piece, MoveType.Capture));
                     }
                 }
             }
@@ -389,12 +398,12 @@ namespace Damath
 
         public void CheckForKing(Piece piece)
         {
-            if (piece.side == Side.Bot)
+            if (piece.Side == Side.Bot)
             {
-                if (piece.row == 7) piece.Promote();
+                if (piece.Row == 7) piece.Promote();
             } else
             {
-                if (piece.row == 0) piece.Promote();
+                if (piece.Row == 0) piece.Promote();
             }
         }
 
@@ -403,13 +412,13 @@ namespace Damath
         /// </summary>
         public void GetPieceMoves(Piece piece)
         {
-            List<Move> moves = new List<Move>();
+            List<Move> moves = new();
             int up = 1;
             int down = -1;
-            int above = piece.row + 1;
-            int below = piece.row - 1;
+            int above = piece.Row + 1;
+            int below = piece.Row - 1;
 
-            if (piece.side == Side.Bot)
+            if (piece.Side == Side.Bot)
             {
                 // Forward check
                 moves.AddRange(CheckLeft(piece, above, up, MovesToGet));
@@ -417,7 +426,7 @@ namespace Damath
                 // Backward check
                 moves.AddRange(CheckLeft(piece, below, down, MovesToGet));
                 moves.AddRange(CheckRight(piece, below, down, MovesToGet));
-            } else if (piece.side == Side.Top)
+            } else if (piece.Side == Side.Top)
             {
                 // Forward check
                 moves.AddRange(CheckLeft(piece, below, down, MovesToGet));
@@ -437,13 +446,13 @@ namespace Damath
         /// </summary>
         public List<Move> GetPieceMoves(Piece piece, MoveType moveType = default)
         {
-            List<Move> moves = new List<Move>();
+            List<Move> moves = new();
             int up = 1;
             int down = -1;
-            int above = piece.row + 1;
-            int below = piece.row - 1;
+            int above = piece.Row + 1;
+            int below = piece.Row - 1;
 
-            if (piece.side == Side.Bot)
+            if (piece.Side == Side.Bot)
             {
                 // Forward check
                 moves.AddRange(CheckLeft(piece, above, up, moveType));
@@ -451,7 +460,7 @@ namespace Damath
                 // Backward check
                 moves.AddRange(CheckLeft(piece, below, down, moveType));
                 moves.AddRange(CheckRight(piece, below, down, moveType));
-            } else if (piece.side == Side.Top)
+            } else if (piece.Side == Side.Top)
             {
                 // Forward check
                 moves.AddRange(CheckLeft(piece, below, down, moveType));
@@ -472,11 +481,11 @@ namespace Damath
         /// </summary>
         List<Move> CheckLeft(Piece piece, int startingRow, int direction, MoveType moveType)
         {
-            List<Move> moves = new List<Move>();
-            List<Move> captureMoves = new List<Move>();
+            List<Move> moves = new();
+            List<Move> captureMoves = new();
             Cell cellToCapture = null;
             int nextEnemyPiece = 0;
-            int left = piece.col - 1;
+            int left = piece.Col - 1;
 
             for (int row = startingRow ; row < maximumRows ; row += direction)
             {
@@ -486,25 +495,25 @@ namespace Damath
 
                 Cell cellToCheck = GetCell(left, row);
 
-                if (cellToCheck.piece == null)  // Next cell is empty cell
+                if (cellToCheck.Piece == null)  // Next cell is empty cell
                 {
                     if (cellToCapture != null)  // There's a captureable cell
                     {
                         piece.CanCapture = true;
-                        captureMoves.Add(new Move(GetCell(piece.col, piece.row), cellToCheck, cellToCapture.piece));
+                        captureMoves.Add(new Move(GetCell(piece.Col, piece.Row), cellToCheck, cellToCapture.Piece));
                         if (piece.IsKing) moves.Clear();
                     } else
                     {
-                        if (piece.forward != direction)
+                        if (piece.Forward != direction)
                         {
                             if (!piece.IsKing) break;
                         }
-                        moves.Add(new Move(GetCell(piece.col, piece.row), cellToCheck));
+                        moves.Add(new Move(GetCell(piece.Col, piece.Row), cellToCheck));
                     }
 
                     if (!piece.IsKing) break;
 
-                } else if (cellToCheck.piece.side == piece.side)    // Next cell has allied piece
+                } else if (cellToCheck.Piece.Side == piece.Side)    // Next cell has allied piece
                 {
                     break;
                 } else  // Next cell has enemy piece
@@ -533,11 +542,11 @@ namespace Damath
         /// </summary>
         List<Move> CheckRight(Piece piece, int startingRow, int direction, MoveType moveType)
         {
-            List<Move> moves = new List<Move>();
-            List<Move> captureMoves = new List<Move>();
+            List<Move> moves = new();
+            List<Move> captureMoves = new();
             int nextEnemyPiece = 0;
             Cell cellToCapture = null;
-            int right = piece.col + 1;
+            int right = piece.Col + 1;
 
             for (int row = startingRow; row < maximumRows ; row += direction)
             {
@@ -547,25 +556,25 @@ namespace Damath
 
                 Cell cellToCheck = GetCell(right, row);
 
-                if (cellToCheck.piece == null)  // Next cell is empty cell
+                if (cellToCheck.Piece == null)  // Next cell is empty cell
                 {
                     if (cellToCapture != null)  // There's a captureable cell
                     {
                         piece.CanCapture = true;
-                        captureMoves.Add(new Move(GetCell(piece.col, piece.row), cellToCheck, cellToCapture.piece));
+                        captureMoves.Add(new Move(GetCell(piece.Col, piece.Row), cellToCheck, cellToCapture.Piece));
                         if (piece.IsKing) moves.Clear();
                     } else
                     {
-                        if (piece.forward != direction)
+                        if (piece.Forward != direction)
                         {
                             if (!piece.IsKing) break;
                         }
-                        moves.Add(new Move(GetCell(piece.col, piece.row), cellToCheck));
+                        moves.Add(new Move(GetCell(piece.Col, piece.Row), cellToCheck));
                     }
 
                     if (!piece.IsKing) break;
 
-                } else if (cellToCheck.piece.side == piece.side)    // Next cell has allied piece
+                } else if (cellToCheck.Piece.Side == piece.Side)    // Next cell has allied piece
                 {
                     break;
                 } else  // Next cell has enemy piece
@@ -596,7 +605,7 @@ namespace Damath
 
         public Cell GetCell(Piece piece)
         {
-            return Cellmap[(piece.col, piece.row)];
+            return Cellmap[(piece.Col, piece.Row)];
         }
 
         public Dictionary<(int, int), Cell> GetCells()

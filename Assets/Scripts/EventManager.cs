@@ -1,17 +1,12 @@
 using System;
-using System.Collections;
-using System.Diagnostics;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Events;
-using System.Text.RegularExpressions;
 
 namespace Damath
 {
     public class EventManager : MonoBehaviour
     {
-        public bool EnableDebug = false;
+        public bool EnableDebugMode = false;
 
         #region Global events
 
@@ -27,6 +22,7 @@ namespace Damath
         
         public event Action<Player> OnPlayerCreate;
         public event Action<Player> OnPlayerClick;
+        public event Action<Player> OnPlayerRightClick;
         public event Action<Player> OnPlayerHold;
         public event Action<Player> OnPlayerRelease;
         public event Action<Player> OnPlayerSelect;
@@ -56,18 +52,6 @@ namespace Damath
 
         #endregion
 
-        public event Action initialize;
-        public event Action refresh;
-        public event Action createBoard;
-        public event Action onCellClick;
-        public event Action onPieceClick;
-        public event Action onPieceMove;
-        public event Action onPieceCapture;
-
-        // Selection
-        public event Action<Cell> moveSelectionIndicator;
-        public event Action<List<Move>> createMoveIndicatorHandler;
-
         // Methods
         #region Global event methods
         
@@ -82,10 +66,10 @@ namespace Damath
         /// <summary>
         /// Called when a ruleset is created. 
         /// </summary>
-        /// <param name="rules"></param>
-        public void RulesetCreate(Ruleset rules)
+        /// <param name="value"></param>
+        public void RulesetCreate(Ruleset value)
         {
-            OnRulesetCreate?.Invoke(rules);
+            OnRulesetCreate?.Invoke(value);
         }
 
         #endregion
@@ -126,14 +110,16 @@ namespace Damath
         }
 
         /// <summary>
-        /// Called when player clicks.
+        /// Called when player left clicks.
         /// </summary>
         public void PlayerClick(Player player)
         {
-            if (OnPlayerClick != null)
-            {
-                OnPlayerClick(player);
-            }
+            OnPlayerClick?.Invoke(player);
+        }
+
+        public void PlayerRightClick(Player player)
+        {
+            OnPlayerRightClick?.Invoke(player);
         }
 
         /// <summary>

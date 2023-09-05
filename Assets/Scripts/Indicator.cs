@@ -35,7 +35,7 @@ namespace Damath
         public void Move(Cell cell, bool show = false)
         {
             if (show) gameObject.SetActive(true);
-            (Col, Row) = (cell.col, cell.row);
+            (Col, Row) = (cell.Col, cell.Row);
             transform.position = cell.transform.position;
         }
 
