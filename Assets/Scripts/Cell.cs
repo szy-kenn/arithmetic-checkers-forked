@@ -31,24 +31,14 @@ namespace Damath
         {
             Operation = value;
 
-            switch (value)
+            spriteRenderer.sprite = value switch
             {
-                case Operation.Add:
-                    spriteRenderer.sprite = Sprite[0]; 
-                    break;
-                case Operation.Sub:
-                    spriteRenderer.sprite = Sprite[1]; 
-                    break;
-                case Operation.Mul:
-                    spriteRenderer.sprite = Sprite[2]; 
-                    break;
-                case Operation.Div:
-                    spriteRenderer.sprite = Sprite[3]; 
-                    break;
-                default:
-                    spriteRenderer.sprite = null; 
-                    break;
-            }
+                Operation.Add => Sprite[0],
+                Operation.Sub => Sprite[1],
+                Operation.Mul => Sprite[2],
+                Operation.Div => Sprite[3],
+                _ => null,
+            };
             spriteRenderer.color = Colors.darkCerulean;
         }
 
@@ -72,7 +62,9 @@ namespace Damath
             if (piece == null) return;
             
             Piece = piece;
+            Piece.SetCell(this);
             HasPiece = true;
+            IsValidMove = false;
         }
         
         public void RemovePiece()

@@ -16,6 +16,7 @@ namespace Damath
             Game.Events.OnRulesetCreate += ReceiveRuleset;
             Game.Events.OnMatchBegin += Init;
             Game.Events.OnPlayerRightClick += CreateMenu;
+            Game.Events.OnCellDeselect += HideMenus;
             Game.Events.OnCellSelect += SelectCell;
         }
         
@@ -24,6 +25,7 @@ namespace Damath
             Game.Events.OnRulesetCreate -= ReceiveRuleset;
             Game.Events.OnMatchBegin -= Init;
             Game.Events.OnPlayerRightClick -= CreateMenu;
+            Game.Events.OnCellDeselect -= HideMenus;
             Game.Events.OnCellSelect -= SelectCell;
         }
 
@@ -110,6 +112,12 @@ namespace Damath
             SelectedCell = cell;
         }
 
+        public void HideMenus(Cell cell)
+        {
+            PieceMenu?.Close();
+            ToolsMenu?.Close();;
+        }
+
         public void CreateMenu(Player player)
         {
             if (!player.IsModerator) return;
@@ -117,10 +125,10 @@ namespace Damath
             if (PieceMenu != null)
             {
                 Destroy(PieceMenu.gameObject);
-                PieceMenu = UIHandler.Main.CreateWindow();
+                PieceMenu = Game.UI.CreateWindow();
             } else
             {
-                PieceMenu = UIHandler.Main.CreateWindow();
+                PieceMenu = Game.UI.CreateWindow();
             }
 
             if (SelectedCell.Piece == null)
@@ -129,6 +137,7 @@ namespace Damath
             } else
             {
                 PieceMenu.AddChoice(RemovePiece, "Remove Piece", UIHandler.Main.icons[1]);
+                PieceMenu.AddChoice(RemovePiece, "Capture Piece", UIHandler.Main.icons[1]);
 
                 if (!SelectedCell.Piece.IsKing)
                 {
@@ -147,10 +156,10 @@ namespace Damath
             if (ToolsMenu != null)
             {
                 Destroy(ToolsMenu.gameObject);
-                ToolsMenu = UIHandler.Main.CreateWindow();
+                ToolsMenu = Game.UI.CreateWindow();
             } else
             {
-                ToolsMenu = UIHandler.Main.CreateWindow();
+                ToolsMenu = Game.UI.CreateWindow();
             }
 
             if (EnableDebug)

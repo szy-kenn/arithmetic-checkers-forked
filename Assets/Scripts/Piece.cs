@@ -66,9 +66,9 @@ namespace Damath
 
         public void SetCell(Cell cell)
         {
-            this.Cell = cell;
-            this.Col = cell.Col;
-            this.Row = cell.Row;
+            Cell = cell;
+            Col = cell.Col;
+            Row = cell.Row;
         }
 
         public void SetValue(string value)

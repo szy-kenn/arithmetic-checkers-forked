@@ -381,7 +381,7 @@ namespace Damath
         {
             (int col, int row) = (int.Parse(args[1]), int.Parse(args[2]));
             
-            Game.Events.PlayerSelect(Operator);
+            Game.Events.PlayerLeftClick(Operator);
             Game.Events.CellSelect(Cellmap[(col, row)]);
         }
         
@@ -389,7 +389,7 @@ namespace Damath
         {
             (int col, int row) = (int.Parse(args[1]), int.Parse(args[2]));
             
-            Game.Events.PlayerSelect(Operator);
+            Game.Events.PlayerLeftClick(Operator);
             Game.Events.CellSelect(Cellmap[(col, row)]);
         }
         

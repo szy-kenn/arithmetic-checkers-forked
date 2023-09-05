@@ -11,10 +11,10 @@ namespace Damath
         public Themes Theme;
 
         public Ruleset Rules { get; private set; }
-        public Dictionary<(int, int), Cell> Cellmap = new Dictionary<(int, int), Cell>();
-        public Dictionary<Side, Player> Players = new Dictionary<Side, Player>();
+        public Dictionary<(int, int), Cell> Cellmap = new();
+        public Dictionary<Side, Player> Players = new();
         public Piece SelectedPiece = null;
-        public List<Move> ValidMoves = new List<Move>();
+        public List<Move> ValidMoves = new();
         public MoveType MovesToGet = MoveType.All;
         public bool TurnRequiresCapture = false;
 
@@ -45,15 +45,14 @@ namespace Damath
             Game.Events.OnRulesetCreate += ReceiveRuleset;
             Game.Events.OnMatchBegin += Init;
             Game.Events.OnPieceSelect += SelectPiece;
+            Game.Events.OnPieceDeselect += ClearValidMoves;
             Game.Events.OnMoveSelect += SelectMove;
             Game.Events.OnMoveTypeRequest += UpdateMoveType;
             Game.Events.OnRequireCapture += UpdateRequireCaptureState;
-            Game.Events.OnBoardUpdateMoves += UpdateValidMoves;
-            Game.Events.OnPieceMove += MovePiece;
             Game.Events.OnPlayerCreate += AddPlayer;
-            Game.Events.OnPieceCapture += CapturePiece;
             Game.Events.OnPieceDone += CheckForKing;
-            Game.Events.OnCellRequest += ReturnCell;
+            Game.Events.OnPieceDone += ClearValidMoves;
+            Game.Events.OnChangeTurn += ClearValidMoves;
         }
 
         void OnDisable()
@@ -61,15 +60,14 @@ namespace Damath
             Game.Events.OnRulesetCreate -= ReceiveRuleset;
             Game.Events.OnMatchBegin -= Init;
             Game.Events.OnPieceSelect -= SelectPiece;
+            Game.Events.OnPieceDeselect -= ClearValidMoves;
             Game.Events.OnMoveSelect -= SelectMove;
             Game.Events.OnMoveTypeRequest -= UpdateMoveType;
             Game.Events.OnRequireCapture -= UpdateRequireCaptureState;
-            Game.Events.OnBoardUpdateMoves -= UpdateValidMoves;
-            Game.Events.OnPieceMove -= MovePiece;
             Game.Events.OnPlayerCreate -= AddPlayer;
-            Game.Events.OnPieceCapture -= CapturePiece;
             Game.Events.OnPieceDone -= CheckForKing;
-            Game.Events.OnCellRequest -= ReturnCell;
+            Game.Events.OnPieceDone -= ClearValidMoves;
+            Game.Events.OnChangeTurn -= ClearValidMoves;
         }
 
 
@@ -171,21 +169,29 @@ namespace Damath
 
         public void ClearValidMoves()
         {
+            if (Settings.EnableDebugMode)
+            {
+                Debug.Log("[BOARD]: Cleared valid moves.");
+            }
+
             foreach (var move in ValidMoves)
             {
                 move.destinationCell.IsValidMove = false;
             }
-            ValidMoves = new();
+            ValidMoves.Clear();
+        }
+        public void ClearValidMoves(Cell cell)
+        {
+            ClearValidMoves();
+        }
+        public void ClearValidMoves(Side side)
+        {
+            ClearValidMoves();
         }
 
-        public void UpdateValidMoves(List<Move> moves)
+        public void ClearValidMoves(Piece piece)
         {
-            this.ValidMoves = moves;
-        }
-
-        public void ReturnCell(int col, int row)
-        {
-            Game.Events.CellReturn(Cellmap[(col, row)]);
+            ClearValidMoves();
         }
 
         public void ReceiveRuleset(Ruleset rules)
@@ -206,17 +212,23 @@ namespace Damath
             this.TurnRequiresCapture = value;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="piece"></param>
         public void SelectPiece(Piece piece)
         {
             SelectedPiece = piece;
 
-            if (TurnRequiresCapture)
+            if (!TurnRequiresCapture)
             {
-                GetPieceMoves(piece, MoveType.Capture);
+                ValidMoves = GetPieceMoves(piece);
             } else
             {
-                GetPieceMoves(piece);
+                ValidMoves = GetPieceMoves(piece, MoveType.Capture);
             }
+            
+            Game.Events.BoardUpdateValidMoves(ValidMoves);
         }
 
         public void SelectMove(Cell cell)
@@ -229,47 +241,29 @@ namespace Damath
 
                 if (cell == move.destinationCell)
                 {
-                    Game.Events.PieceMove(move);
+                    MovePiece(move);
                     break;
                 }
             }
         }
 
         /// <summary>
-        /// Move the piece to destination cell in the scene.
+        /// Perform a piece move given a Move object.
         /// </summary>
         public void MovePiece(Move move)
         {
-            Game.Console.Log($"[ACTION]: Moved {SelectedPiece.Value}: ({move.originCell.Col}, {move.originCell.Row}) -> ({move.destinationCell.Col}, {move.destinationCell.Row})");
-
             Piece pieceToMove = move.originCell.Piece;
+            Game.Events.PieceMove(move);
+            Game.Console.Log($"[ACTION]: Moved {pieceToMove.Value}: ({move.originCell.Col}, {move.originCell.Row}) -> ({move.destinationCell.Col}, {move.destinationCell.Row})");
+            AnimateMove(move);
 
-            AnimateMovedPiece(move);
-
-            if (move.HasCapture) // Piece has capture
-            {
-                Game.Events.PieceCapture(move);
-            } else // Piece no capture
+            if (!move.HasCapture)
             {
                 DonePiece(pieceToMove);
+            } else
+            {
+                CapturePiece(move);
             }
-        }
-
-        /// <summary>
-        /// Animates the moved piece.
-        /// </summary>
-        public void AnimateMovedPiece(Move move)
-        {
-            // Swap pieces
-            (move.originCell.Piece, move.destinationCell.Piece) = (move.destinationCell.Piece, move.originCell.Piece);
-            // Reinitialization
-            move.originCell.HasPiece = false;
-            move.destinationCell.HasPiece = true;
-
-            move.destinationCell.Piece.Col = move.destinationCell.Col;
-            move.destinationCell.Piece.Row = move.destinationCell.Row;
-
-            LeanTween.move(move.destinationCell.Piece.gameObject, move.destinationCell.transform.position, 0.5f).setEaseOutExpo();
         }
         
         /// <summary>
@@ -277,74 +271,22 @@ namespace Damath
         /// </summary>
         public void CapturePiece(Move move)
         {
+            Game.Events.PieceCapture(move);
             Game.Audio.PlaySound("Capture");
-
             Debug.Log($"[ACTION]: {move.capturingPiece} captured {move.capturedPiece}");
+            AnimateCapture(move);
 
-            AnimateCapturedPiece(move);
             // Check for chain captures
-            GetPieceMoves(SelectedPiece, MoveType.Capture);
+            List<Move> moves = GetPieceMoves(SelectedPiece, MoveType.Capture);
 
-            if (ValidMoves.Count != 0) // Has chain capture
-            {
-                Game.Events.BoardUpdateMoves(ValidMoves);
-                Game.Events.RequireCapture(true);
-            } else // No chain capture
+            if (moves.Count == 0) // Has no more succeeding captures
             {
                 DonePiece(SelectedPiece);
+            } else // Has at least one succeeding capture
+            {
+                Game.Events.BoardUpdateCaptureables(moves);
+                Game.Events.RequireCapture(true);
             }              
-        }
-
-        /// <summary>
-        /// Animates the capture.
-        /// </summary>
-        void AnimateCapturedPiece(Move move)
-        {
-            Piece capturedPiece = move.capturedPiece;
-
-            if (capturedPiece.Side == Side.Bot)
-            {
-                RectTransform rect = capturedPiece.GetComponent<RectTransform>();
-
-                capturedPiece.gameObject.transform.SetParent(graveyardT.transform);
-                rect.anchorMin = new Vector2(0.5f, 1f);
-                rect.anchorMax = new Vector2(0.5f, 1f);
-
-                LeanTween.move(capturedPiece.gameObject, graveyardT.transform.position, 0.5f).setEaseOutExpo();
-            } else // Side.Top
-            {
-                RectTransform rect = capturedPiece.GetComponent<RectTransform>();
-
-                capturedPiece.gameObject.transform.SetParent(graveyardB.transform);
-                rect.anchorMin = new Vector2(0.5f, 0f);
-                rect.anchorMax = new Vector2(0.5f, 0f);
-
-                LeanTween.move(capturedPiece.gameObject, graveyardB.transform.position, 0.5f).setEaseOutExpo();
-            }
-
-            GetCell(capturedPiece).RemovePiece();
-            move.capturingPiece.HasCaptured = true;
-            move.capturingPiece.CanCapture = false;
-        }
-
-        /// <summary>
-        /// Checks the piece for any possible actions.
-        /// </summary>
-        public void CheckPiece(Piece piece)
-        {
-            List<Move> moves;
-
-            CheckForKing(piece);
-            // Check if moved piece is able to be captured
-            moves = CheckIfCaptureable(piece);
-            if (moves.Count != 0) // Piece is captureable
-            {
-                Game.Events.BoardUpdateMoves(moves);
-                Game.Events.RequireCapture(true);
-            } else // Piece is NOT captureable
-            {
-                DonePiece(SelectedPiece);
-            }
         }
 
         /// <summary>
@@ -352,22 +294,91 @@ namespace Damath
         /// </summary>
         public void DonePiece(Piece piece)
         {
-            List<Move> moves = new();
+            List<Move> moves = CheckIfCaptureable(piece);
 
-            moves.AddRange(CheckIfCaptureable(piece));
-
-            Game.Events.BoardUpdateMoves(moves);
-
-            if (moves.Count != 0)
-            {
-                Game.Events.RequireCapture(true);
-            } else
+            if (moves.Count == 0) // Piece is NOT captureable
             {
                 Game.Events.RequireCapture(false);
+                ClearValidMoves();
+            } else // Piece is captureable
+            {
+                Game.Events.BoardUpdateCaptureables(moves);
+                Game.Events.RequireCapture(true);
             }
             
             Game.Events.PieceDone(piece);
         }
+
+        /// <summary>
+        /// Animates the moved piece in the scene.
+        /// </summary>
+        void AnimateMove(Move move)
+        {
+            move.destinationCell.SetPiece(move.originCell.Piece);
+            move.originCell.RemovePiece();
+
+            // (move.originCell.Piece, move.destinationCell.Piece) = (move.destinationCell.Piece, move.originCell.Piece);
+
+            if (Settings.EnableAnimations)
+            {
+                LeanTween.move(move.destinationCell.Piece.gameObject, move.destinationCell.transform.position, 0.5f).setEaseOutExpo();
+            }
+        }
+
+        /// <summary>
+        /// Animates the capture.
+        /// </summary>
+        void AnimateCapture(Move move)
+        {
+            Piece capturedPiece = move.capturedPiece;
+            RectTransform rect = capturedPiece.GetComponent<RectTransform>();
+
+            if (capturedPiece.Side == Side.Bot) // Blue player captured
+            {
+                capturedPiece.gameObject.transform.SetParent(graveyardT.transform);
+                rect.anchorMin = new Vector2(1f, 0.5f);
+                rect.anchorMax = new Vector2(1f, 1f);
+
+                if (Settings.EnableAnimations)
+                {
+                    LeanTween.move(capturedPiece.gameObject, graveyardT.transform.position, 0.5f).setEaseOutExpo();
+                }
+            } else // Orange player captured
+            {
+                capturedPiece.gameObject.transform.SetParent(graveyardB.transform);
+                rect.anchorMin = new Vector2(0.5f, 0f);
+                rect.anchorMax = new Vector2(0.5f, 0f);
+
+                if (Settings.EnableAnimations)
+                {
+                    LeanTween.move(capturedPiece.gameObject, graveyardB.transform.position, 0.5f).setEaseOutExpo();
+                }
+            }
+
+            GetCell(capturedPiece).RemovePiece();
+            move.capturingPiece.HasCaptured = true;
+            move.capturingPiece.CanCapture = false;
+        }
+
+        // /// <summary>
+        // /// Checks the piece for any possible actions.
+        // /// </summary>
+        // public void CheckPiece(Piece piece)
+        // {
+        //     List<Move> moves;
+
+        //     CheckForKing(piece);
+        //     // Check if moved piece is able to be captured
+        //     moves = CheckIfCaptureable(piece);
+        //     if (moves.Count != 0) // Piece is captureable
+        //     {
+        //         Game.Events.BoardUpdateValidMoves(moves);
+        //         Game.Events.RequireCapture(true);
+        //     } else // Piece is NOT captureable
+        //     {
+        //         DonePiece(SelectedPiece);
+        //     }
+        // }
 
         /// <summary>
         /// This checks the 4 surrounding cells of the given piece (SE, SW, NE, NW).
@@ -410,7 +421,7 @@ namespace Damath
         /// <summary>
         /// Returns the valid moves of the piece.
         /// </summary>
-        public void GetPieceMoves(Piece piece)
+        public List<Move> GetPieceMoves(Piece piece)
         {
             List<Move> moves = new();
             int up = 1;
@@ -436,9 +447,7 @@ namespace Damath
                 moves.AddRange(CheckRight(piece, above, up, MovesToGet));
             }
 
-            ValidMoves = moves;
-            Game.Events.BoardUpdateMoves(ValidMoves);
-            Game.Events.PieceWait(piece);
+            return moves;
         }
 
         /// <summary>
@@ -470,9 +479,6 @@ namespace Damath
                 moves.AddRange(CheckRight(piece, above, up, moveType));
             }
 
-            ValidMoves = moves;
-            Game.Events.BoardUpdateMoves(ValidMoves);
-            Game.Events.PieceWait(piece);
             return moves;
         }
 

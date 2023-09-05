@@ -10,6 +10,8 @@ namespace Damath
         public string Name = "Player";
         public Side Side;
         public int PieceCount = 0;
+        public List<Piece> Pieces;
+        public List<Piece> CapturedPieces;
         public float Score = 0f;
         public bool IsControllable = true;
         public bool IsPlaying = false;
@@ -20,17 +22,20 @@ namespace Damath
         void Start()
         {
             this.name = $"Player ({Name})";
+
+            Game.Events.OnMatchBegin += SetConsoleOperator;
+            Game.Events.OnCellDeselect += DeselectCell;
         }
 
-        void Awake()
+        void OnDisable()
         {
-            Game.Events.OnMatchBegin += SetConsoleOperator;
+            Game.Events.OnMatchBegin -= SetConsoleOperator;
+            Game.Events.OnCellDeselect -= DeselectCell;
         }
 
         void Update()
         {
             DetectRaycast();
-
             
             // Debug
             if (Input.GetKeyDown(KeyCode.F1))
@@ -38,6 +43,11 @@ namespace Damath
                 if (!IsPlaying) return;
                 SetConsoleOperator();
             }
+        }
+
+        public void DeselectCell(Cell cell)
+        {
+            SelectedCell = null;
         }
 
         void SetConsoleOperator()
@@ -75,46 +85,48 @@ namespace Damath
 
         void DetectRaycast()
         {
-            if (!IsPlaying) return;
-
             if (Input.GetMouseButton(0))
             {
-                Game.Events.PlayerHold(this);
+                if (Input.GetMouseButtonDown(0))
+                {
+                    Game.Events.PlayerHold(this);
+                }
+                
+                if (Input.GetMouseButtonUp(0))
+                {
+                    Game.Events.PlayerRelease(this);
+                }
             }
 
             if (Input.GetMouseButtonDown(0))
             {
-                Game.Events.PlayerClick(this);
-
-                RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+                RaycastHit2D hit = CastRay();
                 if (hit.collider == null) return;
 
                 Click(hit);
+                Game.Events.PlayerLeftClick(this);
             }
 
             if (Input.GetMouseButtonDown(1))
             {
-                Game.Events.PlayerRightClick(this);
-
-                RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+                RaycastHit2D hit = CastRay();
                 if (hit.collider == null) return;
 
                 Click(hit);
+                Game.Events.PlayerRightClick(this);
             }
+        }
+
+        RaycastHit2D CastRay()
+        {
+            return Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
         }
 
         public void Click(RaycastHit2D hit)
         {
-            Game.Events.PlayerSelect(this);
-
             if (hit.collider.CompareTag("Cell"))
             {
                 SelectedCell = hit.collider.gameObject.GetComponent<Cell>();
-
-                Game.Events.CellSelect(SelectedCell);
-            } else
-            {
-                Game.Events.PlayerDeselect(this);
             }
             // Add more else-if statements to add more components that can be detected by the Raycast
             // Make sure to include every game objects with tags to avoid getting not detected

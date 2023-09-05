@@ -8,6 +8,7 @@ namespace Damath
 
     public class Move
     {
+        public Player Player;
         public Cell originCell, from;
         public Cell destinationCell, to;
         public Piece capturingPiece = null;
@@ -39,6 +40,11 @@ namespace Damath
         public void SetScoreValue(float value)
         {
             Score = value;
+        }
+
+        public void SetPlayer(Player player)
+        {
+            Player = player;
         }
     }
 }

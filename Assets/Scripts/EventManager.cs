@@ -21,12 +21,10 @@ namespace Damath
         #region Player events
         
         public event Action<Player> OnPlayerCreate;
-        public event Action<Player> OnPlayerClick;
+        public event Action<Player> OnPlayerLeftClick;
         public event Action<Player> OnPlayerRightClick;
         public event Action<Player> OnPlayerHold;
         public event Action<Player> OnPlayerRelease;
-        public event Action<Player> OnPlayerSelect;
-        public event Action<Player> OnPlayerDeselect;
         public event Action<Player> OnPlayerCommand;
 
         #endregion
@@ -38,11 +36,13 @@ namespace Damath
         public event Action<Cell> OnCellReturn;
         public event Action<Cell> OnMoveSelect;
         public event Action<Piece> OnPieceSelect;
+        public event Action<Piece> OnPieceDeselect;
         public event Action<Piece> OnPieceWait;
         public event Action<Move> OnPieceMove;
         public event Action<Piece> OnPieceDone;
         public event Action<Move> OnPieceCapture;
-        public event Action<List<Move>> OnBoardUpdateMoves;
+        public event Action<List<Move>> OnBoardUpdateValidMoves;
+        public event Action<List<Move>> OnBoardUpdateCaptureables;
         public event Action<Dictionary<(int, int), Cell>> OnBoardUpdateCellmap;
         public event Action<MoveType> OnMoveTypeRequest;
         public event Action<bool> OnRequireCapture;
@@ -77,28 +77,6 @@ namespace Damath
         #region Player event methods
 
         /// <summary>
-        /// Called when a player selects something.
-        /// </summary>
-        public void PlayerSelect(Player player)
-        {
-            if (OnPlayerSelect != null)
-            {
-                OnPlayerSelect(player);
-            }
-        }
-
-        /// <summary>
-        /// Called when player deselects.
-        /// </summary>
-        public void PlayerDeselect(Player who)
-        {
-            if (OnPlayerDeselect != null)
-            {
-                OnPlayerDeselect(who);
-            }
-        }
-
-        /// <summary>
         /// Called when a new player is created.
         /// </summary>
         public void PlayerCreate(Player player)
@@ -112,9 +90,9 @@ namespace Damath
         /// <summary>
         /// Called when player left clicks.
         /// </summary>
-        public void PlayerClick(Player player)
+        public void PlayerLeftClick(Player player)
         {
-            OnPlayerClick?.Invoke(player);
+            OnPlayerLeftClick?.Invoke(player);
         }
 
         public void PlayerRightClick(Player player)
@@ -190,10 +168,7 @@ namespace Damath
         /// </summary>
         public void MoveSelect(Cell cell)
         {
-            if (OnMoveSelect != null)
-            {
-                OnMoveSelect(cell);
-            }
+            OnMoveSelect?.Invoke(cell);
         }
 
         /// <summary>
@@ -201,10 +176,15 @@ namespace Damath
         /// </summary>
         public void PieceSelect(Piece piece)
         {
-            if (OnPieceSelect != null)
-            {
-                OnPieceSelect(piece);
-            }
+            OnPieceSelect?.Invoke(piece);
+        }
+
+        /// <summary>
+        /// Called when a piece is deselected.
+        /// </summary>
+        public void PieceDeselect(Piece piece)
+        {
+            OnPieceDeselect?.Invoke(piece);
         }
 
         /// <summary>
@@ -212,10 +192,7 @@ namespace Damath
         /// </summary>
         public void PieceWait(Piece piece)
         {
-            if (OnPieceWait != null)
-            {
-                OnPieceWait(piece);
-            }
+            OnPieceWait?.Invoke(piece);
         }
 
         /// <summary>
@@ -223,10 +200,7 @@ namespace Damath
         /// </summary>
         public void PieceMove(Move move)
         {
-            if (OnPieceMove != null)
-            {
-                OnPieceMove(move);
-            }
+            OnPieceMove?.Invoke(move);
         }
 
         /// <summary>
@@ -243,14 +217,15 @@ namespace Damath
         /// <summary>
         /// Called when the Board updates all its valid moves.
         /// </summary>
-        public void BoardUpdateMoves(List<Move> moves)
+        public void BoardUpdateValidMoves(List<Move> moves)
         {
-            if (OnBoardUpdateMoves != null)
-            {
-                OnBoardUpdateMoves(moves);
-            }
+            OnBoardUpdateValidMoves?.Invoke(moves);
         }
-        
+
+        public void BoardUpdateCaptureables(List<Move> moves)
+        {
+            OnBoardUpdateCaptureables?.Invoke(moves);
+        }
         /// <summary>
         /// Called when the Board updates all its valid moves.
         /// </summary>
@@ -269,10 +244,7 @@ namespace Damath
 
         public void PieceCapture(Move move)
         {
-            if (OnPieceCapture != null)
-            {
-                OnPieceCapture(move);
-            }
+            OnPieceCapture?.Invoke(move);
         }
 
         /// <summary>

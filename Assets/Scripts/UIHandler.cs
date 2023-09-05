@@ -10,16 +10,9 @@ namespace Damath
     public class UIHandler : MonoBehaviour
     {
         public static UIHandler Main;
-        public Canvas Canvas;
+        [SerializeField] Canvas Canvas;
         public List<Sprite> icons;
-        public Dictionary<string, Sprite> dicons = new Dictionary<string, Sprite>();
-
-        [Header("Elements")]
-        public GameObject Sidebar;
-        public GameObject Title;
-        public GameObject GlobalTimer;
-        public ScoreboardUI ScoreboardUI;
-        public GameObject MessageBox;
+        public Dictionary<string, Sprite> Icons = new();
         
         [Header("Prefabs")]
         public GameObject windowPrefab;
@@ -42,7 +35,7 @@ namespace Damath
 
         public void AddIcon(string name, Sprite sprite)
         {
-            dicons.Add(name, sprite);
+            Icons.Add(name, sprite);
         }
 
         /// <summary>

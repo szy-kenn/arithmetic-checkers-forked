@@ -29,22 +29,16 @@ namespace Damath
 
         void Awake()
         {
-            Game.Events.OnPlayerSelect += SetPlayerClicker;
-            Game.Events.OnCellSelect += SelectCell;
-            Game.Events.OnCellDeselect += ClearValidMoves;
+            Game.Events.OnPlayerLeftClick += CheckPlayer;
             Game.Events.OnRequireCapture += RequireCapture;
             Game.Events.OnPieceDone += ChangeTurns;
-            Game.Events.OnCellReturn += ReceiveCell;
         }
 
         void OnDisable()
         {
-            Game.Events.OnPlayerSelect -= SetPlayerClicker;
-            Game.Events.OnCellSelect -= SelectCell;
-            Game.Events.OnCellDeselect -= ClearValidMoves;
+            Game.Events.OnPlayerLeftClick -= CheckPlayer;
             Game.Events.OnRequireCapture -= RequireCapture;
             Game.Events.OnPieceDone -= ChangeTurns;
-            Game.Events.OnCellReturn -= ReceiveCell;
         }
 
         void Start()
@@ -116,28 +110,12 @@ namespace Damath
             }
         }
 
-        public void ReceiveCell(Cell cell)
-        {
-            SelectCell(cell);
-        }
-
         /// <summary>
         /// 
         /// </summary>
         public void RequireCapture(bool value)
         {
             TurnRequiresCapture = value;
-        }
-
-        public void ClearValidMoves()
-        {
-            List<Move> moves = new();
-            Game.Events.BoardUpdateMoves(moves);
-        }
-
-        public void ClearValidMoves(Cell cell)
-        {
-            ClearValidMoves();
         }
 
         /// <summary>
@@ -175,67 +153,81 @@ namespace Damath
         }
 
         /// <summary>
-        /// Main.
+        /// Perform player checks.
         /// </summary>
-        /// <param name="cell"></param>
-        public void SelectCell(Cell cell)
+        /// <param name="player"></param>
+        public void CheckPlayer(Player player)
         {
-            if (TurnOf != WhoClicked.Side)
+            if (!player.IsPlaying) return;
+            if (!player.IsModerator)
             {
-                if (!WhoClicked.IsModerator) return;
+                if (TurnOf != player.Side) return;
             }
 
-            SelectedCell = cell;
+            SelectCell(player);
+        }
+
+        /// <summary>
+        /// Cell selection method.
+        /// </summary>
+        /// <param name="player">The player who selected the cell.</param>
+        public void SelectCell(Player player)
+        {
+            Game.Events.CellSelect(player.SelectedCell);
+            SelectedCell = player.SelectedCell;
 
             // Cell has piece
-            if (cell.HasPiece)
-            {   
-                if (WhoClicked.Side != cell.Piece.Side)
+            if (SelectedCell.HasPiece)
+            {
+                if (SelectedCell.Piece.Side == player.Side)
                 {
-                    Game.Events.CellDeselect(cell);
-                    return;
-                }
+                    // // If a piece had previously captured, only select that piece
 
-                // If a piece had previously captured, only select that piece
-                if (MovedPiece != null)
-                {
-                    SelectPiece(MovedPiece);
-                    return;
-                }
-
-                if (TurnRequiresCapture)
-                {
-                    if (cell.Piece.CanCapture)
+                    if (!TurnRequiresCapture)
                     {
                         SelectPiece(SelectedCell.Piece);
-                    } else
-                    {
-                        Game.Events.CellDeselect(cell);
                         return;
+                    } else // Turn requires capture
+                    {
+                        if (SelectedCell.Piece.CanCapture)
+                        {
+                            SelectPiece(SelectedCell.Piece);
+                        } else
+                        {
+                            DeselectPiece(SelectedCell.Piece);
+                        }
                     }
                 } else
                 {
-                    SelectPiece(SelectedCell.Piece);
+                    DeselectPiece(SelectedCell.Piece);
                 }
-                return;
-
             } else
             {
-                if (cell.IsValidMove)
+                if (SelectedCell.IsValidMove)
                 {
                     SelectMove(SelectedCell);
                 } else
                 {
-                    Game.Events.CellDeselect(cell);
-                    return;
+                    DeselectPiece(SelectedCell.Piece);
                 }
             }
         }
 
         public void SelectPiece(Piece piece)
         {
+            if (SelectedPiece != null)
+            {
+                Game.Events.PieceDeselect(piece);
+            }
+            SelectedPiece = piece;
             Game.Events.PieceSelect(piece);
             Game.Audio.PlaySound("Select");
+        }
+
+        public void DeselectPiece(Piece piece)
+        {
+            SelectedPiece = null;
+            Game.Events.PieceDeselect(piece);
         }
 
         /// <summary>
