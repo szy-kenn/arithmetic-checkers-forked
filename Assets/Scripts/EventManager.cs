@@ -26,13 +26,15 @@ namespace Damath
         public event Action<Player> OnPlayerHold;
         public event Action<Player> OnPlayerRelease;
         public event Action<Player> OnPlayerCommand;
+        public event Action<Player> OnPlayerSelectCell;
+        public event Action<Player> OnPlayerSelectPiece;
+        public event Action<Player> OnPlayerSelectMove;
 
         #endregion
         
         #region Match events
         public event Action<Cell> OnCellSelect;
         public event Action<Cell> OnCellDeselect;
-        public event Action<int, int> OnCellRequest;
         public event Action<Cell> OnCellReturn;
         public event Action<Cell> OnMoveSelect;
         public event Action<Piece> OnPieceSelect;
@@ -105,10 +107,7 @@ namespace Damath
         /// </summary>
         public void PlayerHold(Player player)
         {
-            if (OnPlayerHold != null)
-            {
-                OnPlayerHold(player);
-            }
+            OnPlayerHold?.Invoke(player);
         }
 
         /// <summary>
@@ -116,18 +115,27 @@ namespace Damath
         /// </summary>
         public void PlayerRelease(Player player)
         {
-            if (OnPlayerRelease != null)
-            {
-                OnPlayerRelease(player);
-            }
+            OnPlayerRelease?.Invoke(player);
+        }
+
+        public void PlayerSelectCell(Player player)
+        {
+            OnPlayerSelectCell?.Invoke(player);
+        }
+
+        public void PlayerSelectPiece(Player player)
+        {
+            OnPlayerSelectPiece?.Invoke(player);
+        }
+
+        public void PlayerSelectMove(Player player)
+        {
+            OnPlayerSelectMove?.Invoke(player);
         }
 
         public void PlayerCommand(Player player)
         {
-            if (OnPlayerCommand != null)
-            {
-                OnPlayerCommand(player);
-            }
+            OnPlayerCommand?.Invoke(player);
         }
 
         #endregion
@@ -139,10 +147,7 @@ namespace Damath
         /// </summary>
         public void CellSelect(Cell cell)
         {
-            if (OnCellSelect != null)
-            {
-                OnCellSelect(cell);
-            }
+            OnCellSelect?.Invoke(cell);
         }
 
         /// <summary>
@@ -152,12 +157,7 @@ namespace Damath
         {
             OnCellDeselect?.Invoke(cell);
         }
-        
-        public void CellRequest(int col, int row)
-        {
-            OnCellRequest?.Invoke(col, row);
-        }
-        
+                
         public void CellReturn(Cell cell)
         {
             OnCellReturn?.Invoke(cell);
@@ -208,10 +208,7 @@ namespace Damath
         /// </summary>
         public void PieceDone(Piece piece)
         {
-            if (OnPieceDone != null)
-            {
-                OnPieceDone(piece);
-            }
+            OnPieceDone?.Invoke(piece);
         }
         
         /// <summary>

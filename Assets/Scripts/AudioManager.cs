@@ -25,10 +25,6 @@ namespace Damath
         {
             foreach (Transform audioSource in transform)
             {
-                if (Settings.EnableDebugMode)
-                {
-                    Debug.Log($"Loaded audio {audioSource.name}");
-                }
                 AddSource(audioSource.name, audioSource.GetComponent<AudioSource>());
             }
         }

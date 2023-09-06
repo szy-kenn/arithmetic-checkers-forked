@@ -67,10 +67,12 @@ namespace Damath
             IsValidMove = false;
         }
         
-        public void RemovePiece()
+        public Piece RemovePiece()
         {
+            var ret = Piece;
             Piece = null;
             HasPiece = false;
+            return ret;
         }
     }
 }

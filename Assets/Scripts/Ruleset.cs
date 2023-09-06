@@ -14,6 +14,7 @@ namespace Damath
         public bool EnableCapture;
         public bool EnableMandatoryCapture;
         public bool EnableChainCapture;
+        public bool EnableTouchMove;
         public bool EnableScoring;
         public bool EnablePromotion;
         public bool EnableTimer;
@@ -128,6 +129,7 @@ namespace Damath
             EnablePromotion = true;
             EnableChainCapture = true;
             EnableCapture = true;
+            EnableTouchMove = false;
             EnableTimer = true;
             EnableTurnTimer = true;
             EnableGlobalTimer = true;
@@ -146,6 +148,7 @@ namespace Damath
             EnablePromotion = true;
             EnableChainCapture = true;
             EnableCapture = true;
+            EnableTouchMove = false;
             EnableTimer = true;
             EnableTurnTimer = true;
             EnableGlobalTimer = true;

@@ -15,18 +15,16 @@ namespace Damath
         {
             Game.Events.OnRulesetCreate += ReceiveRuleset;
             Game.Events.OnMatchBegin += Init;
-            Game.Events.OnPlayerRightClick += CreateMenu;
+            Game.Events.OnPlayerRightClick += CheckPlayer;
             Game.Events.OnCellDeselect += HideMenus;
-            Game.Events.OnCellSelect += SelectCell;
         }
         
         void OnDisable()
         {
             Game.Events.OnRulesetCreate -= ReceiveRuleset;
             Game.Events.OnMatchBegin -= Init;
-            Game.Events.OnPlayerRightClick -= CreateMenu;
+            Game.Events.OnPlayerRightClick -= CheckPlayer;
             Game.Events.OnCellDeselect -= HideMenus;
-            Game.Events.OnCellSelect -= SelectCell;
         }
 
         void ReceiveRuleset(Ruleset ruleset)
@@ -107,9 +105,12 @@ namespace Damath
         }
         #endregion
 
-        public void SelectCell(Cell cell)
+        public void CheckPlayer(Player player)
         {
-            SelectedCell = cell;
+            if (!player.IsModerator) return;
+
+            SelectedCell = player.SelectedCell;
+            CreateMenu();
         }
 
         public void HideMenus(Cell cell)
@@ -118,9 +119,8 @@ namespace Damath
             ToolsMenu?.Close();;
         }
 
-        public void CreateMenu(Player player)
+        public void CreateMenu()
         {
-            if (!player.IsModerator) return;
             if (ToolsMenu != null) ToolsMenu.Close();
             if (PieceMenu != null)
             {
@@ -133,21 +133,22 @@ namespace Damath
 
             if (SelectedCell.Piece == null)
             {
-                PieceMenu.AddChoice(AddPiece, "Add Piece", UIHandler.Main.icons[0]);
+                PieceMenu.AddChoice(AddPiece, "Add Piece", Game.UI.icons[0]);
             } else
             {
-                PieceMenu.AddChoice(RemovePiece, "Remove Piece", UIHandler.Main.icons[1]);
-                PieceMenu.AddChoice(RemovePiece, "Capture Piece", UIHandler.Main.icons[1]);
+                PieceMenu.AddChoice(RemovePiece, "Remove Piece", Game.UI.icons[1]);
+                PieceMenu.AddChoice(RemovePiece, "Capture Piece", Game.UI.icons[1]);
 
                 if (!SelectedCell.Piece.IsKing)
                 {
-                    PieceMenu.AddChoice(Promote, "Promote", UIHandler.Main.icons[2]);
+                    PieceMenu.AddChoice(Promote, "Promote", Game.UI.icons[2]);
                 } else
                 {
-                    PieceMenu.AddChoice(Demote, "Demote", UIHandler.Main.icons[3]);
+                    PieceMenu.AddChoice(Demote, "Demote", Game.UI.icons[3]);
                 }
             }
             PieceMenu.Open(Input.mousePosition);
+            PieceMenu.gameObject.transform.position.z.Equals(-1f);
         }
 
         public void CreateToolsMenu()

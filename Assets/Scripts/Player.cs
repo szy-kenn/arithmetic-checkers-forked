@@ -18,6 +18,7 @@ namespace Damath
         public bool IsModerator = false;
         public bool IsAI = false;
         public Cell SelectedCell = null;
+        RaycastHit2D hit;
 
         void Start()
         {
@@ -100,36 +101,53 @@ namespace Damath
 
             if (Input.GetMouseButtonDown(0))
             {
-                RaycastHit2D hit = CastRay();
-                if (hit.collider == null) return;
-
-                Click(hit);
-                Game.Events.PlayerLeftClick(this);
+                CastRay();
+                LeftClick();
             }
 
             if (Input.GetMouseButtonDown(1))
             {
-                RaycastHit2D hit = CastRay();
-                if (hit.collider == null) return;
-
-                Click(hit);
-                Game.Events.PlayerRightClick(this);
+                CastRay();
+                RightClick();
             }
         }
 
         RaycastHit2D CastRay()
         {
-            return Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+            hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);            
+            return hit;
         }
 
-        public void Click(RaycastHit2D hit)
+        public void LeftClick()
         {
+            if (hit.collider == null) return;
+
             if (hit.collider.CompareTag("Cell"))
             {
                 SelectedCell = hit.collider.gameObject.GetComponent<Cell>();
+                Game.Events.PlayerSelectCell(this);
+            } else if (hit.collider.CompareTag("Background"))
+            {
+                Debug.Log("Left clicked background");
+                Game.Events.CellDeselect(SelectedCell);
             }
-            // Add more else-if statements to add more components that can be detected by the Raycast
-            // Make sure to include every game objects with tags to avoid getting not detected
+            Game.Events.PlayerLeftClick(this);
+        }
+
+        public void RightClick()
+        {
+            if (hit.collider == null) return;
+
+            if (hit.collider.CompareTag("Cell"))
+            {
+                SelectedCell = hit.collider.gameObject.GetComponent<Cell>();
+                Game.Events.PlayerSelectCell(this);
+            } else if (hit.collider.CompareTag("Background"))
+            {
+                Debug.Log("Right clicked background");
+                Game.Events.CellDeselect(SelectedCell);
+            }
+            Game.Events.PlayerRightClick(this);
         }
     }
 }

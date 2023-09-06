@@ -32,6 +32,16 @@ namespace Damath
             choices.Add(c_choice); 
         }
 
+        public void AddChoice(Choice choice)
+        {
+
+        }
+
+        public void SetSize(float width, float height)
+        {
+            rect.localScale = new Vector2(width, height);
+        }
+
         public void ClearChoices()
         {
             if (choices.Count != 0)
