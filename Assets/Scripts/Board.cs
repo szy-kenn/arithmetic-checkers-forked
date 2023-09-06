@@ -339,8 +339,12 @@ namespace Damath
                 rect.anchorMin = new Vector2(1f, 0.5f);
                 rect.anchorMax = new Vector2(1f, 1f);
 
+                rect.localScale = new Vector2(1.5f, 1.5f);
                 if (Settings.EnableAnimations)
                 {
+                    if (graveyardB.transform.childCount > 0){
+                        MoveGraveyardChildren(graveyardT);
+                    }
                     LeanTween.move(capturedPiece.gameObject, graveyardT.transform.position, 0.5f).setEaseOutExpo();
                 }
             } else // Orange player captured
@@ -348,16 +352,38 @@ namespace Damath
                 capturedPiece.gameObject.transform.SetParent(graveyardB.transform);
                 rect.anchorMin = new Vector2(0.5f, 0f);
                 rect.anchorMax = new Vector2(0.5f, 0f);
-
+                
+                rect.localScale = new Vector2(1.5f, 1.5f);
+                if (graveyardB.transform.childCount > 0){
+                        MoveGraveyardChildren(graveyardB);
+                    }
                 if (Settings.EnableAnimations)
                 {
                     LeanTween.move(capturedPiece.gameObject, graveyardB.transform.position, 0.5f).setEaseOutExpo();
                 }
             }
 
+            // move.Player.CapturedPieces.Add(capturedPiece);
             GetCell(capturedPiece).RemovePiece();
             move.capturingPiece.HasCaptured = true;
             move.capturingPiece.CanCapture = false;
+        }
+
+        void MoveGraveyardChildren(GameObject graveyard){
+            for (int i = 0; i < graveyard.transform.childCount; i++){
+                GameObject child = graveyard.transform.GetChild(i).gameObject;
+                float childPositionX = child.transform.position.x;
+
+                Vector3 targetPosition = new Vector3(childPositionX -= 0.5f, child.transform.position.y, child.transform.position.z);
+
+                if (Settings.EnableAnimations)
+                {
+                    LeanTween.move(child, targetPosition, 0.5f).setEaseOutExpo();
+                } else
+                {
+                    child.transform.position = targetPosition;
+                }
+            }
         }
 
         // /// <summary>
