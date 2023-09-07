@@ -3,26 +3,49 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using TMPro;
 
 namespace Damath
 {
-    public class Window : MonoBehaviour
+    public class Window : MonoBehaviour, IToggleable, IUIElement
     {
+        public bool IsVisible { get; set; }   
         public bool IsChoiceable = false;
         public List<Choice> choices;
         public bool IsMenu = false;
-        public bool IsVisible = false;
         public RectTransform rect;
+        public bool IsHovered { get; set; }
 
         void Awake()
         {
             rect = GetComponent<RectTransform>();
         }
 
+        public void OnPointerEnter(PointerEventData pointerEventData)
+        {
+
+        }
+
+        public void OnPointerExit(PointerEventData pointerEventData)
+        {
+            
+        }
+
+        public void Toggle()
+        {
+            if (IsVisible)
+            {
+                gameObject.SetActive(false);
+            } else
+            {
+                gameObject.SetActive(true);
+            }
+        }
+
         public void AddChoice(UnityAction function, string text, Sprite icon=null)
         {
-            var newChoice = Instantiate(UIHandler.Main.choicePrefab);
+            var newChoice = Instantiate(Game.UI.choicePrefab);
             newChoice.transform.SetParent(transform);
             newChoice.transform.localScale = new Vector3(1f, 1f, 1f);
 
@@ -37,7 +60,15 @@ namespace Damath
 
         }
 
-        public void SetSize(float width, float height)
+        public void SetScale(float multiplier)
+        {
+            Vector2 dimensions = rect.localScale;
+            dimensions.x *= multiplier; 
+            dimensions.y *= multiplier; 
+            rect.localScale = dimensions;
+        }
+
+        public void SetScale(float width, float height)
         {
             rect.localScale = new Vector2(width, height);
         }
@@ -51,20 +82,6 @@ namespace Damath
                     choices.Remove(c);
                     Destroy(c.gameObject);
                 }
-            }
-        }
-
-        /// <summary>
-        /// Toggles window visibility.
-        /// </summary>
-        public void Toggle()
-        {
-            if (IsVisible)
-            {
-                Close();
-            } else
-            {
-                Open();
             }
         }
 

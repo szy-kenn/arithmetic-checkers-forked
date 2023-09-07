@@ -12,6 +12,8 @@ namespace Damath
         public const float CellSize = 2.5f;
         public const float CellOffset = 1.5f;
         public const float ZLocation = -3f;
+        public const float ZLocationWindow = -3f;
+        public const float ZLocationTooltip = -4f;
         public const float PieceZLocation = -2f;
         public const float CellZLocation = -3f;
 

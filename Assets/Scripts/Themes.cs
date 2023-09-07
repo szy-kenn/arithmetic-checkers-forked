@@ -20,7 +20,7 @@ public class Themes : MonoBehaviour
         botChipColor = Colors.darkCerulean;
         botChipShadow = Colors.darkJungleBlue;
         
-        topChipColor = Colors.persimmonOrange;
+        topChipColor = Colors.PersimmonOrange;
         topChipShadow = Colors.burntUmber;
     }
 }

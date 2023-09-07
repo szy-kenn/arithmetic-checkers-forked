@@ -274,8 +274,6 @@ namespace Damath
                 {
                     Game.Events.BoardUpdateCaptureables(ValidMoves);
                     Game.Events.RequireCapture(true);
-
-
                     return;
                 }
             }

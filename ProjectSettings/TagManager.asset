@@ -64,3 +64,6 @@ TagManager:
   - name: Windows
     uniqueID: 4017613001
     locked: 0
+  - name: Tooltips
+    uniqueID: 2021306435
+    locked: 0

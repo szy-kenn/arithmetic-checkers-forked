@@ -1,54 +1,62 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using TMPro;
 
 namespace Damath
 {
-    public class Button : MonoBehaviour
+    public class Button : MonoBehaviour, IUIElement, ITooltip
     {
-        public string text = "Button";
-        public Sprite icon = null;
-        public bool HasIcon = false;
-
-        UnityEngine.UI.Button button;
-        TextMeshProUGUI tmp;
-        SpriteRenderer spriteRenderer;
-
+        public bool IsVisible { get; set; }
+        public Sprite Icon = null;
+        public Tooltip Tooltip { get; set; }
+        [field: TextArea, SerializeField] public string TooltipText { get; set; }
+        public bool IsHovered { get; set; }
+        private UnityEngine.UI.Button button;
+        private TextMeshProUGUI tmpUGUI;
+        
         void Awake()
         {
             button = GetComponent<UnityEngine.UI.Button>();
-            tmp = transform.Find("Text").GetComponent<TextMeshProUGUI>();
-            spriteRenderer = transform.Find("Icon").GetComponent<SpriteRenderer>();
+            tmpUGUI = transform.Find("Text").GetComponent<TextMeshProUGUI>();
         }
 
         void Start()
         {
-            tmp.text = text;
+            Tooltip = Game.UI.CreateTooltip(this, TooltipText);
         }
 
-        public void SetText(string text)
+        public void OnPointerEnter(PointerEventData eventData)
         {
-            this.text = text;
-            tmp.text = text;
+            IsHovered = true;
+            Tooltip.SetVisible(true);
+        }
+        
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            IsHovered = false;
+            Tooltip.SetVisible(false);
+        }
+
+        public void SetText(string value)
+        {
+            tmpUGUI.text = value;
         }
 
         public void SetIcon(Sprite icon)
         {
             if (icon != null)
             {
-                this.icon = icon;
-                spriteRenderer.sprite = icon;
+                Icon = icon;
             }
         }
 
-        public void AddListener(UnityAction callback)
+        public void AddListener(UnityAction function)
         {
             if (button != null)
             {
-                button.onClick.AddListener(callback);
+                button.onClick.AddListener(function);
             }
         }
     }

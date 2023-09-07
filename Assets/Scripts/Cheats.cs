@@ -7,9 +7,11 @@ namespace Damath
         public Ruleset Rules { get; private set; }
         public Window PieceMenu = null;
         public Window ToolsMenu = null;
+        public Window ValuwWindow = null;
         public Cell SelectedCell;
         public bool EnableDebug = true;
         public Player WhoClicked = null;
+        [SerializeField] GameObject newPieceWindowPrefab;
 
         void Awake()
         {
@@ -54,8 +56,15 @@ namespace Damath
         public void AddPiece()
         {
             if (SelectedCell.Piece == null)
+            {        
+                 if (PieceMenu != null)
             {
-                
+                Destroy(PieceMenu.gameObject);
+                PieceMenu = Game.UI.CreateChoiceWindow();
+            } else
+            {
+                PieceMenu = Game.UI.CreateChoiceWindow();
+            }
             }
         }
         public void RemovePiece()
@@ -125,12 +134,13 @@ namespace Damath
             if (PieceMenu != null)
             {
                 Destroy(PieceMenu.gameObject);
-                PieceMenu = Game.UI.CreateWindow();
+                PieceMenu = Game.UI.CreateChoiceWindow();
             } else
             {
-                PieceMenu = Game.UI.CreateWindow();
+                PieceMenu = Game.UI.CreateChoiceWindow();
             }
 
+            PieceMenu.SetScale(0.5f);
             if (SelectedCell.Piece == null)
             {
                 PieceMenu.AddChoice(AddPiece, "Add Piece", Game.UI.icons[0]);
@@ -147,7 +157,7 @@ namespace Damath
                     PieceMenu.AddChoice(Demote, "Demote", Game.UI.icons[3]);
                 }
             }
-            PieceMenu.Open(Input.mousePosition);
+            PieceMenu.Open(new Vector3(Input.mousePosition.x, Input.mousePosition.y, Constants.ZLocationWindow));
             PieceMenu.gameObject.transform.position.z.Equals(-1f);
         }
 
@@ -163,6 +173,7 @@ namespace Damath
                 ToolsMenu = Game.UI.CreateWindow();
             }
 
+            ToolsMenu.SetScale(0.5f);
             if (EnableDebug)
             {
                 ToolsMenu.AddChoice(RemoveAll, "Remove All");
