@@ -23,6 +23,7 @@ namespace Damath
             destinationCell = destination; to = destinationCell;
             destinationCell.IsValidMove = true;
             capturingPiece = origin.Piece;
+            Player = capturingPiece.Owner;
             type = MoveType.Normal;
         }
         
@@ -32,6 +33,7 @@ namespace Damath
             destinationCell = destination; to = destinationCell;
             destinationCell.IsValidMove = true;
             capturingPiece = origin.Piece;
+            Player = capturingPiece.Owner;
             capturedPiece = toCapture;
             HasCapture = true;
             type = MoveType.Capture;

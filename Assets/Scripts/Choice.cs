@@ -7,7 +7,7 @@ using TMPro;
 
 public class Choice : MonoBehaviour
 {
-    public List<UnityAction> callbacks = new List<UnityAction>();
+    public List<UnityAction> callbacks = new();
     public TextMeshProUGUI c_tmp;
     public Image c_image;
     public Button c_button;

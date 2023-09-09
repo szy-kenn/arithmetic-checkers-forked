@@ -26,12 +26,12 @@ namespace Damath
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            
+            IsHovered = true;
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            
+            IsHovered = true;
         }
 
         public bool GetValue()

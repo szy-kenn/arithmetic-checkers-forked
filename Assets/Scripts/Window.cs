@@ -24,21 +24,23 @@ namespace Damath
 
         public void OnPointerEnter(PointerEventData pointerEventData)
         {
-
+            IsHovered = true;
         }
 
         public void OnPointerExit(PointerEventData pointerEventData)
         {
-            
+            IsHovered = false;
         }
 
         public void Toggle()
         {
             if (IsVisible)
             {
+                IsVisible = false;
                 gameObject.SetActive(false);
             } else
             {
+                IsVisible = true;
                 gameObject.SetActive(true);
             }
         }

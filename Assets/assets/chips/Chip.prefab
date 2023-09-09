@@ -202,8 +202,6 @@ MonoBehaviour:
   Position: {x: 0, y: 0, z: 0}
   Value: 
   Side: 0
-  Color: {r: 0, g: 0, b: 0, a: 0}
-  Shadow: {r: 0, g: 0, b: 0, a: 0}
   IsKing: 0
   CanCapture: 0
   HasCaptured: 0
@@ -211,6 +209,12 @@ MonoBehaviour:
   Sprites:
   - {fileID: 21300000, guid: abedf3bb648bfc34a94f6535be18171d, type: 3}
   - {fileID: 21300000, guid: b1643ad483c5594479ca0d9555bf2865, type: 3}
+  Color: {r: 0, g: 0, b: 0, a: 0}
+  Shadow: {r: 0, g: 0, b: 0, a: 0}
+  rect: {fileID: 96072316555059120}
+  tmp: {fileID: 243476818795445260}
+  overlayTop: {fileID: 8577096469484517002}
+  overlayShadow: {fileID: 3123025128967981738}
 --- !u!1 &7103881841409839295
 GameObject:
   m_ObjectHideFlags: 0

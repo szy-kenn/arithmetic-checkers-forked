@@ -1,18 +1,25 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using Unity;
+using System.Runtime.InteropServices;
+using Unity.Netcode;
+using System;
+using System.Linq;
 
 namespace Damath
 {
     /// <summary>
     /// Controls the match.
     /// </summary>
-    public class MatchController : MonoBehaviour
+    public class MatchController : NetworkBehaviour
     {
-        public Ruleset Rules;
-        
         [Header("Match")]
-        public bool IsPlaying = false;
-        public Dictionary<Side, Player> Players = new();
+        public Ruleset Rules;
+        public bool IsPlaying { get; set; }
+        public bool IsOnline { get; set; }
+        public Lobby Lobby;
+        public List<Player> Spectators = new();
         public Player WhoClicked = null;
         public Cell SelectedCell = null;
         [SerializeField] Piece SelectedPiece;
@@ -24,26 +31,29 @@ namespace Damath
         public List<Move> MandatoryMoves = new();
         public bool EnablePlayerControls = false;
         public Dictionary<(int, int), Cell> Cellmap = new();
-
-        [SerializeField] Player playerPrefab;
+        [SerializeField] GameObject playerPrefab;
+        [SerializeField] LobbyManager LobbyHandler;
 
         void Awake()
         {
+            Game.Events.OnLobbyStart += BeginMatch;
             Game.Events.OnPlayerSelectCell += SelectCell;
             Game.Events.OnRequireCapture += RequireCapture;
+            Game.Events.OnCellSelect += SelectCell;
             Game.Events.OnCellDeselect += DeselectPiece;
             Game.Events.OnPieceCapture += SelectMovedPiece;
             Game.Events.OnPieceDone += ChangeTurns;
             Game.Events.OnChangeTurn += ClearMovedPiece;
-            
         }
 
         void OnDisable()
         {
+            Game.Events.OnLobbyStart -= BeginMatch;
             Game.Events.OnPlayerSelectCell -= SelectCell;
             Game.Events.OnRequireCapture -= RequireCapture;
+            Game.Events.OnCellSelect -= SelectCell;
             Game.Events.OnCellDeselect -= DeselectPiece;
-            Game.Events.OnPieceCapture += SelectMovedPiece;
+            Game.Events.OnPieceCapture -= SelectMovedPiece;
             Game.Events.OnPieceDone -= ChangeTurns;
             Game.Events.OnChangeTurn -= ClearMovedPiece;
         }
@@ -51,32 +61,76 @@ namespace Damath
         void Start()
         {
             // Auto creates a classic match if none created upon starting
-            if (Game.Main.Ruleset == null)
+            if (Game.Main.Ruleset != null)
+            {
+                Rules = Game.Main.Ruleset;
+            } else
             {
                 Rules = new();
-                Game.Events.RulesetCreate(Rules);
             }
-            Init();
+            Game.Console.Log($"Created match {Rules.Mode}");
+            Game.Events.MatchCreate(this);
+            Game.Events.RulesetCreate(Rules);
         }
-
-        void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-
-            }
-        }
-
 
         public void Init()
         {
             if (IsPlaying) return;
+            if (Game.Main.IsHosting)
+            {
+                StartOnline();
+            } else
+            {
+                StartSolo();
+            }
+        }
 
-            CreatePlayers();
+        Player CreatePlayer(Side side)
+        {
+            Player newPlayer = Instantiate(playerPrefab).GetComponent<Player>();
+            newPlayer.SetSide(side);
+            newPlayer.SetPlaying(true);
+            Game.Events.PlayerCreate(newPlayer);
+            return newPlayer;
+        }
 
+        void StartSolo()
+        {
+            CreatePlayer(Side.Bot);
+            CreatePlayer(Side.Top);
+            BeginMatch(true);
+        }
+
+        void StartOnline()
+        {
+            Lobby = Game.CreateLobby(Rules.Mode);
+            Game.Network.StartHost();
+            Game.Events.LobbyHost(Lobby);
+        }
+
+        public void AddPlayer(ulong clientId)
+        {
+            Player player;
+            if (clientId == Game.Network.LocalClientId)
+            {
+                player = CreatePlayer(Side.Bot);
+            } else
+            {
+                player = CreatePlayer(Side.Top);
+            }
+            player.SetClientId(clientId);
+            player.GetComponent<NetworkObject>().Spawn();
+        }
+
+        public void BeginMatch(bool force = false)
+        {
             Game.Events.MatchBegin(this);
+            IsPlaying = true;
+        }
 
-            Reset();
+        public void BeginMatch(Lobby lobby)
+        {
+            BeginMatch(true);
         }
 
         public void Reset()
@@ -87,35 +141,18 @@ namespace Damath
             EnablePlayerControls = true;
         }
 
-        public void CreatePlayers()
-        {
-            CreatePlayer(Side.Bot);
-            CreatePlayer(Side.Top);
-        }
-
-        public Player CreatePlayer(Side side, string name = "Player")
-        {
-            var newPlayer = Instantiate(playerPrefab);
-            newPlayer.SetName(name);
-            newPlayer.SetSide(side);
-            newPlayer.SetPlaying(true);
-            Players.Add(side, newPlayer);
-            Game.Events.PlayerCreate(newPlayer);
-            return newPlayer;
-        }
-
-        public void CheckVictoryCondition()
-        {
-            foreach (var kv in Players)
-            {
-                Player player = kv.Value;
-                if (player.PieceCount <= 0)
-                {
-                    //
-                    break;
-                }
-            }
-        }
+        // public void CheckVictoryCondition()
+        // {
+        //     foreach (var kv in Players)
+        //     {
+        //         Player player = kv.Value;
+        //         if (player.PieceCount <= 0)
+        //         {
+        //             //
+        //             break;
+        //         }
+        //     }
+        // }
 
         /// <summary>
         /// 
@@ -173,13 +210,12 @@ namespace Damath
         }
 
         /// <summary>
-        /// 
+        /// Select cell while checking conditions.
         /// </summary>
         /// <param name=""></param>
         public void SelectCell(Player player)
         {
             SelectedCell = player.SelectedCell;
-            Game.Events.CellSelect(SelectedCell);
 
             if (!PerformPlayerChecks(player)) return;
             
@@ -206,6 +242,26 @@ namespace Damath
                 }
             }
             DeselectPiece();
+        }
+
+        /// <summary>
+        /// This force selects the cell.
+        /// </summary>
+        /// <param name="cell"></param>
+        public void SelectCell(Cell cell)
+        {
+            SelectedCell = cell;
+
+            if (SelectedCell.HasPiece)
+            {
+                SelectPiece(SelectedCell.Piece);
+            } else
+            {
+                if (SelectedCell.IsValidMove)
+                {
+                    SelectMove(SelectedCell);
+                }
+            }
         }
 
         public void SelectPiece(Piece piece)
@@ -245,15 +301,19 @@ namespace Damath
         }
 
         /// <summary>
-        /// 
+        /// Move select by player.
         /// </summary>
         /// <param name="player"></param>
         public void SelectMove(Player player)
         {
             MovedPiece = SelectedPiece;
-
-            Game.Events.MoveSelect(player.SelectedCell);
+            Game.Events.PlayerSelectMove(player.SelectedCell);
             Game.Audio.PlaySound("Move");
+        }
+
+        public void SelectMove(Cell cell)
+        {
+            Game.Events.MoveSelect(SelectedCell);
         }
 
         public void ClearMovedPiece(Side side)
@@ -261,20 +321,23 @@ namespace Damath
             MovedPiece = null;
         }
 
-        public void CheckForKing(Piece piece)
+        private void GetPlayerCommand(List<string> args)
         {
-            if (piece.Side == Side.Bot)
-            {
-                if (piece.Row == 7) piece.Promote();
-            } else
-            {
-                if (piece.Row == 0) piece.Promote();
-            }
+            string command = string.Join(" ", args.ToArray());
+
+            ExecuteCommandServerRpc(command);
         }
-
-        public void CheckForKings()
+        
+        [ServerRpc(RequireOwnership = false)]
+        public void ExecuteCommandServerRpc(string command, ServerRpcParams serverRpcParams = default)
         {
+            var clientId = serverRpcParams.Receive.SenderClientId;
+            if (Game.Network.ConnectedClients.ContainsKey(clientId))
+            {
+                var client = Game.Network.ConnectedClients[clientId];
 
+                client.PlayerObject.GetComponent<Player>();
+            }
         }
     }
 }

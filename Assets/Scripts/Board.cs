@@ -13,15 +13,15 @@ namespace Damath
 
         public Ruleset Rules { get; private set; }
         public Dictionary<(int, int), Cell> Cellmap = new();
-        public Dictionary<Side, Player> Players = new();
         public Piece SelectedPiece = null;
         public List<Move> ValidMoves = new();
         public MoveType MovesToGet = MoveType.All;
         public bool TurnRequiresCapture = false;
+        private readonly Dictionary<Side, Player> Players = new();
 
         [Header("Objects")]
         [SerializeField] GameObject grid;
-        [SerializeField] GameObject pieces;
+        [SerializeField] GameObject pieceGroup;
         [SerializeField] GameObject coordinates;
         [SerializeField] GameObject graveyardB;
         [SerializeField] GameObject graveyardT;
@@ -44,34 +44,38 @@ namespace Damath
 
         void OnEnable()
         {
+            Game.Events.OnPlayerCreate += GetPlayer;
+            Game.Events.OnPlayerJoin += GetPlayer;
             Game.Events.OnRulesetCreate += ReceiveRuleset;
             Game.Events.OnMatchBegin += Init;
             Game.Events.OnPieceSelect += SelectPiece;
             Game.Events.OnPieceDeselect += ClearValidMoves;
+            Game.Events.OnPlayerSelectMove += SelectMove;
             Game.Events.OnMoveSelect += SelectMove;
             Game.Events.OnMoveTypeRequest += UpdateMoveType;
             Game.Events.OnRequireCapture += UpdateRequireCaptureState;
-            Game.Events.OnPlayerCreate += AddPlayer;
             Game.Events.OnPieceDone += CheckForKing;
             Game.Events.OnChangeTurn += ClearValidMoves;
         }
 
         void OnDisable()
         {
+            Game.Events.OnPlayerCreate -= GetPlayer;
+            Game.Events.OnPlayerJoin -= GetPlayer;
             Game.Events.OnRulesetCreate -= ReceiveRuleset;
             Game.Events.OnMatchBegin -= Init;
             Game.Events.OnPieceSelect -= SelectPiece;
             Game.Events.OnPieceDeselect -= ClearValidMoves;
+            Game.Events.OnPlayerSelectMove -= SelectMove;
             Game.Events.OnMoveSelect -= SelectMove;
             Game.Events.OnMoveTypeRequest -= UpdateMoveType;
             Game.Events.OnRequireCapture -= UpdateRequireCaptureState;
-            Game.Events.OnPlayerCreate -= AddPlayer;
             Game.Events.OnPieceDone -= CheckForKing;
             Game.Events.OnChangeTurn -= ClearValidMoves;
         }
 
-
         #region Initializing methods
+        
         public void Init(MatchController match)
         {
             GenerateCells();
@@ -126,36 +130,27 @@ namespace Damath
             {
                 int col = pieceData.Key.Item1;
                 int row = pieceData.Key.Item2;
+                Cell cell = GetCell(col, row);
                 Side side = pieceData.Value.Item1;
                 string value = pieceData.Value.Item2;
                 bool IsKing = pieceData.Value.Item3;
-                
-                Cell cell = GetCell(col, row);
     
                 Piece newPiece = Instantiate(piecePrefab, new Vector3(col, row, 0), Quaternion.identity);
                 newPiece.name = $"Piece ({value})";
-                newPiece.transform.SetParent(pieces.transform);
+                newPiece.transform.SetParent(pieceGroup.transform);
                 newPiece.transform.position = cell.transform.position;
-
                 newPiece.SetCell(cell);
+                newPiece.SetSide(side);
                 newPiece.SetOwner(Players[side]);
-                newPiece.SetTeam(side);
-                if (side == Side.Bot)
-                {
-                    newPiece.SetColor(Theme.botChipColor, Theme.botChipShadow);
-                } else
-                {
-                    newPiece.SetColor(Theme.topChipColor, Theme.topChipShadow);
-                }
                 newPiece.SetValue(value);
                 newPiece.SetKing(IsKing);
-
                 cell.SetPiece(newPiece);
             }
         }
+
         #endregion
 
-        public void AddPlayer(Player player)
+        public void GetPlayer(Player player)
         {
             if (Settings.EnableDebugMode)
             {
@@ -172,6 +167,7 @@ namespace Damath
             }
             ValidMoves.Clear();
         }
+        
         public void ClearValidMoves(Side side)
         {
             ClearValidMoves();

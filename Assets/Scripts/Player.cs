@@ -2,28 +2,49 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
+using Unity.Netcode;
+using Unity.VisualScripting;
 
 namespace Damath
 {
-    public class Player : MonoBehaviour
+    public class Actor : MonoBehaviour
     {
-        public string Name = "Player";
+        public string Name = "Actor";
+        public NetworkObject networkObject { get; set; }
+        public RaycastHit2D Hit;
+
+        void Awake()
+        {
+            networkObject = GetComponent<NetworkObject>();
+        }
+    }
+
+    public class Spectator : Actor
+    {
+        public bool IsModerator = false;
+    }
+
+    public class Player : Actor
+    {
+        public ulong Id { get; private set; }
         public Side Side;
-        public int PieceCount = 0;
         public List<Piece> Pieces;
         public List<Piece> CapturedPieces;
         public float Score = 0f;
-        public bool IsControllable = true;
         public bool IsPlaying = false;
         public bool IsModerator = false;
         public bool IsAI = false;
         public Cell SelectedCell = null;
-        RaycastHit2D hit;
+
+        void Awake()
+        {
+
+        }
 
         void Start()
         {
-            this.name = $"Player ({Name})";
-
+            Init();
             Game.Events.OnMatchBegin += SetConsoleOperator;
             Game.Events.OnCellDeselect += DeselectCell;
         }
@@ -33,7 +54,7 @@ namespace Damath
             Game.Events.OnMatchBegin -= SetConsoleOperator;
             Game.Events.OnCellDeselect -= DeselectCell;
         }
-
+        
         void Update()
         {
             DetectRaycast();
@@ -44,6 +65,12 @@ namespace Damath
                 if (!IsPlaying) return;
                 SetConsoleOperator();
             }
+        }
+
+        public void Init()
+        {
+            Name = Game.Main.Nickname;
+            name = $"{Game.Main.Nickname} (Player)";
         }
 
         public void DeselectCell(Cell cell)
@@ -69,6 +96,11 @@ namespace Damath
             return value;
         }
 
+        public void SetClientId(ulong value)
+        {
+            Id = value;
+        }
+
         public void SetPlaying(bool value)
         {
             IsPlaying = value;
@@ -91,11 +123,11 @@ namespace Damath
                 if (Input.GetMouseButtonDown(0))
                 {
                     Game.Events.PlayerHold(this);
-                }
                 
-                if (Input.GetMouseButtonUp(0))
-                {
-                    Game.Events.PlayerRelease(this);
+                    if (Input.GetMouseButtonUp(0))
+                    {
+                        Game.Events.PlayerRelease(this);
+                    }
                 }
             }
 
@@ -114,19 +146,18 @@ namespace Damath
 
         RaycastHit2D CastRay()
         {
-            hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);            
-            return hit;
+            Hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);            
+            return Hit;
         }
-
+        
         public void LeftClick()
         {
-            if (hit.collider == null) return;
+            if (Hit.collider == null) return;
 
-            if (hit.collider.CompareTag("Cell"))
+            if (Hit.collider.CompareTag("Cell"))
             {
-                SelectedCell = hit.collider.gameObject.GetComponent<Cell>();
-                Game.Events.PlayerSelectCell(this);
-            } else if (hit.collider.CompareTag("Background"))
+                SelectCell();
+            } else if (Hit.collider.CompareTag("Background"))
             {
                 Debug.Log("Left clicked background");
                 Game.Events.CellDeselect(SelectedCell);
@@ -136,18 +167,23 @@ namespace Damath
 
         public void RightClick()
         {
-            if (hit.collider == null) return;
+            if (Hit.collider == null) return;
 
-            if (hit.collider.CompareTag("Cell"))
+            if (Hit.collider.CompareTag("Cell"))
             {
-                SelectedCell = hit.collider.gameObject.GetComponent<Cell>();
-                Game.Events.PlayerSelectCell(this);
-            } else if (hit.collider.CompareTag("Background"))
+                SelectCell();
+            } else if (Hit.collider.CompareTag("Background"))
             {
                 Debug.Log("Right clicked background");
                 Game.Events.CellDeselect(SelectedCell);
             }
             Game.Events.PlayerRightClick(this);
+        }
+
+        public void SelectCell()
+        {
+            SelectedCell = Hit.collider.gameObject.GetComponent<Cell>();
+            Game.Events.PlayerSelectCell(this);
         }
     }
 }

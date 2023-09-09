@@ -919,6 +919,7 @@ GameObject:
   - component: {fileID: 8784023953336758498}
   - component: {fileID: 8784023953336758509}
   - component: {fileID: 8784023953336758511}
+  - component: {fileID: 1063312208450881248}
   m_Layer: 5
   m_Name: Console Window
   m_TagString: Untagged
@@ -1002,5 +1003,16 @@ MonoBehaviour:
   IsChoiceable: 0
   choices: []
   IsMenu: 0
-  IsVisible: 0
   rect: {fileID: 0}
+--- !u!114 &1063312208450881248
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8784023953336758505}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ffc5a1e71bb6fa438190d0923f871a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

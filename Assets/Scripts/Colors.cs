@@ -11,6 +11,7 @@ public class Colors
     public static Color darkGrayBlue = new(0.17f, 0.27f, 0.37f, 1f);
     public static Color darkJungleBlue = new(0.055f, 0.13f, 0.16f, 1f);
     public static Color darkCerulean = new(0.094f, 0.305f, 0.443f, 1f);
+    public static Color RichCerulean = new(0.1f, 0.31f, 0.45f, 1f);
     public static Color PersimmonOrange = new(1f, 0.44f, 0.27f, 1f);
     public static Color burntUmber = new(0.57f, 0.188f, 0.113f, 1f);
 }

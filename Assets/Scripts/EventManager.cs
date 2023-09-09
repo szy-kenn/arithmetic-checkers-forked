@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace Damath
@@ -10,7 +11,7 @@ namespace Damath
 
         #region Global events
 
-        public event Action OnMatchCreate;
+        public event Action<MatchController> OnMatchCreate;
         public event Action<MatchController> OnMatchBegin;
         public event Action OnMatchEnd;
         public event Action OnBoardCreate;
@@ -20,15 +21,27 @@ namespace Damath
 
         #region Player events
         
+        public event Action<Player> OnPlayerJoin;
         public event Action<Player> OnPlayerCreate;
         public event Action<Player> OnPlayerLeftClick;
         public event Action<Player> OnPlayerRightClick;
         public event Action<Player> OnPlayerHold;
         public event Action<Player> OnPlayerRelease;
-        public event Action<Player> OnPlayerCommand;
+        public event Action<Player, string> OnPlayerSendMessage;
+        public event Action<Player, string> OnPlayerCommand;
         public event Action<Player> OnPlayerSelectCell;
-        public event Action<Player> OnPlayerSelectPiece;
-        public event Action<Player> OnPlayerSelectMove;
+        public event Action<Piece> OnPlayerSelectPiece;
+        public event Action<Cell> OnPlayerSelectMove;
+
+        #endregion
+
+        #region Network events
+
+        public event Action<Lobby> OnLobbyCreate;
+        public event Action<Lobby> OnLobbyHost;
+        public event Action<Lobby> OnLobbyJoin;
+        public event Action<Lobby> OnLobbyStart;
+        public event Action<MatchController> OnMatchHost;
 
         #endregion
         
@@ -58,6 +71,14 @@ namespace Damath
         #region Global event methods
         
         /// <summary>
+        /// Called when a match is created.
+        /// </summary>
+        public void MatchCreate(MatchController match)
+        {
+            OnMatchCreate?.Invoke(match);
+        }
+
+        /// <summary>
         /// Called when a match begins.
         /// </summary>
         public void MatchBegin(MatchController match)
@@ -77,6 +98,14 @@ namespace Damath
         #endregion
 
         #region Player event methods
+
+        /// <summary>
+        /// Called when a new player joins.
+        /// </summary>
+        public void PlayerJoin(Player player)
+        {
+            OnPlayerJoin?.Invoke(player);
+        }
 
         /// <summary>
         /// Called when a new player is created.
@@ -123,19 +152,48 @@ namespace Damath
             OnPlayerSelectCell?.Invoke(player);
         }
 
-        public void PlayerSelectPiece(Player player)
+        public void PlayerSelectPiece(Piece piece)
         {
-            OnPlayerSelectPiece?.Invoke(player);
+            OnPlayerSelectPiece?.Invoke(piece);
         }
 
-        public void PlayerSelectMove(Player player)
+        public void PlayerSelectMove(Cell cell)
         {
-            OnPlayerSelectMove?.Invoke(player);
+            OnPlayerSelectMove?.Invoke(cell);
         }
 
-        public void PlayerCommand(Player player)
+        public void PlayerCommand(Player player, string command)
         {
-            OnPlayerCommand?.Invoke(player);
+            OnPlayerCommand?.Invoke(player, command);
+        }
+
+        #endregion
+
+        #region Network event methods
+
+        public void LobbyCreate(Lobby lobby)
+        {
+            OnLobbyCreate?.Invoke(lobby);
+        }
+
+        public void LobbyHost(Lobby lobby)
+        {
+            OnLobbyHost?.Invoke(lobby);
+        }
+
+        public void LobbyJoin(Lobby lobby)
+        {
+            OnLobbyJoin?.Invoke(lobby);
+        }
+        
+        public void LobbyStart(Lobby lobby)
+        {
+            OnLobbyStart?.Invoke(lobby);
+        }
+        
+        public void MatchHost(MatchController match)
+        {
+            OnMatchHost?.Invoke(match);
         }
 
         #endregion

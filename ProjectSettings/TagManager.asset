@@ -9,6 +9,7 @@ TagManager:
   - Sidebar
   - MainCanvas
   - Board
+  - Network
   layers:
   - Default
   - TransparentFX

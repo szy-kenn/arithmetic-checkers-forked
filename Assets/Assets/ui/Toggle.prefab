@@ -204,8 +204,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 896cb84b05bcc2240854c58283651199, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Value: 1
-  speedInSeconds: 0.5
+  SpeedInSeconds: 0.5
   BackgroundColorOff: {r: 0.37254903, g: 0.38039216, b: 0.39215687, a: 1}
   BackgroundColorOn: {r: 0.19607843, g: 0.32941177, b: 0.4627451, a: 1}
   KnobColor: {r: 1, g: 1, b: 1, a: 1}
@@ -225,7 +224,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Navigation:
-    m_Mode: 3
+    m_Mode: 0
     m_WrapAround: 0
     m_SelectOnUp: {fileID: 0}
     m_SelectOnDown: {fileID: 0}

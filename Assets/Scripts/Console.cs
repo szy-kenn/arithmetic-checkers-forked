@@ -1,73 +1,25 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.UI;
 using TMPro;
+using Unity.Netcode.Transports.UTP;
 
 namespace Damath
 {
     public class Console : MonoBehaviour
     {
-        public class Command
-        {
-            public enum ArgType {Required, Optional}
-            public string Name = "";
-            public string Syntax = "";
-            public string Description = "";
-            public List<(string, ArgType)> Arguments;
-            public List<string> Parameters;
-            public List<string> Aliases;
-            public UnityAction<List<string>> Calls;
-
-            public void AddParameters(List<string> Parameters)
-            {
-            }
-
-            public void AddAlias(string alias)
-            {
-                Aliases.Add(alias);
-            }
-            
-            public void AddCallback(UnityAction<List<string>> func = null)
-            {
-                if (func != null)
-                {
-                    Calls = func;
-                }
-            }
-
-            public void SetDescription(string value)
-            {
-                Description = value;
-            }
-
-            public void Invoke(List<string> args)
-            {
-                Calls(args);
-
-                // foreach (var call in Calls)
-                // {
-                //     call.Invoke();
-                // }
-            }
-        }
-
         public Player Operator = null;
         public Dictionary<string, Command> Commands = new();
         public static Console Main { get; private set; }
         public bool IsEnabled = false;
         public string command;
-        public Window Window = null;
-        
         public MatchController Match = null;
         public Cell SelectedCell = null;
         public Dictionary<(int, int), Cell> Cellmap;
-
-        [SerializeField] GameObject windowPrefab;
-        TMP_InputField input;
-        TextMeshProUGUI messages;
+        [SerializeField] private Window Window;
+        [SerializeField] private TMP_InputField input;
+        [SerializeField] private TextMeshProUGUI messages;
 
         void Awake()
         {
@@ -81,9 +33,20 @@ namespace Damath
             
         }
 
+        void Update()
+        {
+            if (Input.GetKeyDown(Settings.KeyBinds.OpenDeveloperConsole))
+            {
+                if (!Settings.EnableConsole) return;
+                Window.Toggle();
+                if (Window.IsVisible) input.Select();
+            }
+        }
+
         public void OnEnable()
         {
-            
+            Game.Events.OnMatchBegin += ReceiveMatchInstance;
+            Game.Events.OnBoardUpdateCellmap += ReceiveCellmap;
         }
         
         public void OnDisable()
@@ -114,8 +77,7 @@ namespace Damath
 
         void SubscribeToEvents()
         {
-            Game.Events.OnMatchBegin += ReceiveMatchInstance;
-            Game.Events.OnBoardUpdateCellmap += ReceiveCellmap;
+
         }
 
         void ReceiveCellmap(Dictionary<(int, int), Cell> cellmap)
@@ -126,30 +88,13 @@ namespace Damath
         void Init()
         {
             SubscribeToEvents();
-            CreateWindow();
             input = Window.transform.Find("Input").GetComponent<TMPro.TMP_InputField>();
             messages = Window.transform.Find("Message").GetComponent<TextMeshProUGUI>();
 
             input.onSubmit.AddListener(new UnityAction<string>(GetCommand)); 
 
             InitCommands();
-            Log($"[CONSOLE]: Started");
-        }
-
-        void CreateWindow()
-        {
-            if (Window != null)
-            {
-                Window.Delete();
-                Window = Game.UI.CreateWindow(windowPrefab);
-            } else
-            {
-                Window = Game.UI.CreateWindow(windowPrefab);
-            }
-            Window.rect.pivot = new Vector2(0f, 0f);
-            Window.rect.offsetMin = new Vector2(30f, 30f);
-            Window.rect.offsetMax = new Vector2(400f, 160f);
-            Window.Close();
+            Log($"Started console");
         }
 
         public Command CreateCommand(string command, string description = "")
@@ -210,7 +155,15 @@ namespace Damath
             CreateCommand("host",
                           "Host current match.").AddCallback(Command_Host);
 
+            CreateCommand("lobby <info>").AddCallback(Command_Lobby);
+
             CreateCommand("match <create> <classic|speed|custom>").AddCallback(Command_Match);
+
+            CreateCommand("move <col> <row> <toCol> <toRow>",
+                          "").AddCallback(Command_Move);
+
+            CreateCommand("name <name>",
+                          "Change player name.").AddCallback(Command_Name);
 
             CreateCommand("piece <s|s> <col> <row> [value]",
                           "Piece actions.").AddCallback(Command_Piece);
@@ -244,6 +197,7 @@ namespace Damath
         public void Refresh()
         {
             input.text = "";
+            input.Select();
         }
 
         public void Log(object message)
@@ -263,14 +217,12 @@ namespace Damath
         public void Run(string command)
         {
             if (command.Contains("/")) command = command.Replace("/", "");
-
             List<string> args = new(command.Split());
             Command toInvoke;
 
             try
             {
                 toInvoke = Commands[args[0]];
-                Game.Events.PlayerCommand(Operator);
 
                 try
                 {
@@ -292,12 +244,17 @@ namespace Damath
 
         void Command_Chat(List<string> args)
         {
-            Log($"Sent message: {args[1]}");
+            args.RemoveAt(0);
+            var message = string.Join(" ", args.ToArray());
+            Log($"Sent a message: {message}");
+            Game.Events.PlayerCommand(Operator, command);
         }
 
         void Command_Connect(List<string> args)
         {
-            string ip = args[1];
+            if (args[1] == "localhost") args[1] = "127.0.0.1";
+            Game.Network.GetComponent<UnityTransport>().SetConnectionData(args[1], (ushort)7777);
+            Game.Network.StartClient();
         }
 
         void Command_Help(List<string> args)
@@ -323,28 +280,35 @@ namespace Damath
 
         void Command_Host(List<string> args)
         {
-            string ip = args[1];
+            Game.Main.Host();
+        }
+
+        void Command_Lobby(List<string> args)
+        {
+            if (args[1] == "info")
+            {
+                // Log(Game.Main.Lobbies[0].GetLobbyInfo());
+            }
         }
 
         void Command_Match(List<string> args)
         {
             if (args[1] == "create")
             {
-                if (args[2] == "standard")
+                try
                 {
-                    Game.Main.CreateMatch(Ruleset.Type.Standard);
-                } else if (args[2] == "speed")
-                {
-                    Game.Main.CreateMatch(Ruleset.Type.Speed);
-                } else if (args[3] == "custom")
-                {
-                    Game.Main.CreateMatch(Ruleset.Type.Custom);
-                } else
-                {
+                    Ruleset.Type mode = args[2] switch
+                    {
+                        "standard" or "1" => Ruleset.Type.Standard,
+                        "speed" or "2" => Ruleset.Type.Speed,
+                        // "custom" or "3" => Ruleset.Type.Custom,
+                        _ => throw new Exception()
+                    };
+                    Game.Main.CreateMatch(mode);
+                } catch
+                { 
                     PromptInvalid(args[0]);
-                    return;
                 }
-                Log($"Created match with mode {args[2]}");
             } else if (args[1] == "start")
             {
                 if (Game.Main.Ruleset == null)
@@ -352,18 +316,29 @@ namespace Damath
                     Log("No match created. Create one with /match create <mode>");
                 } else
                 {
-                    if (Game.Main.HasMatch)
-                    {
-                        Log($"A match is already running.");
-                    } else
-                    {
-                        Game.Main.StartMatch();
-                    }
+                    Game.Main.StartMatch();
                 }
             } else if (args[1] == "get")
             {
-                Log(Match);
+                Log($"{Match}");
             }
+        }
+        
+        void Command_Move(List<string> args)
+        {
+            (int col, int row) = (int.Parse(args[1]), int.Parse(args[2]));
+            (int toCol, int toRow) = (int.Parse(args[3]), int.Parse(args[4]));
+            
+            Game.Events.CellSelect(Cellmap[(col, row)]);
+            Game.Events.CellSelect(Cellmap[(toCol, toRow)]);
+        }
+
+        void Command_Name(List<string> args)
+        {
+            args.RemoveAt(0);
+            var name = string.Join(" ", args.ToArray());
+            Game.Main.SetNickname(name);
+            Game.Console.Log($"Set name to \"{name}\"");
         }
 
         void Command_Piece(List<string> args)
@@ -381,18 +356,9 @@ namespace Damath
         {
             (int col, int row) = (int.Parse(args[1]), int.Parse(args[2]));
             
-            Game.Events.PlayerLeftClick(Operator);
             Game.Events.CellSelect(Cellmap[(col, row)]);
         }
-        
-        void Command_Move(List<string> args)
-        {
-            (int col, int row) = (int.Parse(args[1]), int.Parse(args[2]));
-            
-            Game.Events.PlayerLeftClick(Operator);
-            Game.Events.CellSelect(Cellmap[(col, row)]);
-        }
-        
+
         #endregion
     }
 }

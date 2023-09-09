@@ -31,10 +31,6 @@ namespace Damath
 
         void ReceiveRuleset(Ruleset ruleset)
         {
-            if (Settings.EnableDebugMode)
-            {
-                Game.Console.Log($"[CHEATS] Received ruleset");
-            }
             Rules = ruleset;
         }
         

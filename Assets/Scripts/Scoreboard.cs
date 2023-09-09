@@ -9,23 +9,25 @@ namespace Damath
     public class Scoreboard : MonoBehaviour
     {
         public Ruleset Rules  { get; private set; }
-        public Dictionary<Side, Player> Players = new Dictionary<Side, Player>();
-        public TextMeshProUGUI BlueScore;
-        public TextMeshProUGUI OrangeScore;
+        private readonly Dictionary<Side, Player> Players = new();
+        [SerializeField] private TextMeshProUGUI BlueScore;
+        [SerializeField] private TextMeshProUGUI OrangeScore;
 
         void OnEnable()
         {
+            Game.Events.OnPlayerCreate += GetPlayer;
+            Game.Events.OnPlayerJoin += GetPlayer;
             Game.Events.OnMatchBegin += Init;
             Game.Events.OnRulesetCreate -= ReceiveRuleset;
-            Game.Events.OnPlayerCreate += AddPlayer;
             Game.Events.OnPieceCapture += Compute;
         }
 
         void OnDisable()
         {
+            Game.Events.OnPlayerCreate -= GetPlayer;
+            Game.Events.OnPlayerJoin -= GetPlayer;
             Game.Events.OnMatchBegin -= Init;
             Game.Events.OnRulesetCreate -= ReceiveRuleset;
-            Game.Events.OnPlayerCreate -= AddPlayer;
             Game.Events.OnPieceCapture -= Compute;
         }
 
@@ -51,7 +53,7 @@ namespace Damath
             Rules = rules;
         }        
 
-        public void AddPlayer(Player player)
+        public void GetPlayer(Player player)
         {
             Players.Add(player.Side, player);
         }

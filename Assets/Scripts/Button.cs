@@ -43,6 +43,11 @@ namespace Damath
         {
             tmpUGUI.text = value;
         }
+        
+        public void SetTooltip(string value)
+        {
+            Tooltip.SetText(value);
+        }
 
         public void SetIcon(Sprite icon)
         {

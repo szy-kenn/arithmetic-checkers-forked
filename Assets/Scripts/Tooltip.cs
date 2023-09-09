@@ -43,6 +43,7 @@ namespace Damath
         {
             image.color = new Color(image.color.r, image.color.g, image.color.b , 0f);
             tmpUGUI.color = new Color(tmpUGUI.color.r, tmpUGUI.color.g, tmpUGUI.color.b , 0f);
+            gameObject.SetActive(false);
         }
 
         public void OnPointerEnter(PointerEventData eventData)
@@ -63,7 +64,7 @@ namespace Damath
             if (value)
             {  
                 LeanTween.cancel(gameObject);
-                await Task.Delay((int)ShowDelay * 1000);
+                if (!IsVisible) await Task.Delay((int)ShowDelay * 1000);
                 if (!element.IsHovered) return;
                 SetVisibility(true);
                 LeanTween.value(gameObject, image.color.a, 1f, FadeInDuration)

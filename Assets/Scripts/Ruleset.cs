@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace Damath
@@ -7,9 +8,10 @@ namespace Damath
     /// A ruleset defines the rules for a match.
     /// It is created and modified only in the Title Scene.
     /// </summary>
-    public class Ruleset
+    public class Ruleset : INetworkSerializable
     {
         public enum Type {Standard, Speed, Custom}
+        public Type Mode;
         public bool EnableCheats;
         public bool EnableCapture;
         public bool EnableMandatoryCapture;
@@ -125,6 +127,7 @@ namespace Damath
 
         public void SetStandard()
         {
+            Mode = Type.Standard;
             EnableMandatoryCapture = true;
             EnablePromotion = true;
             EnableChainCapture = true;
@@ -136,7 +139,7 @@ namespace Damath
             GlobalTimerSeconds = 1200f;
             TurnTimerSeconds = 60f;
             FirstTurn = Side.Bot;
-            EnableCheats = true;
+            EnableCheats = false;
 
             Pieces.SetMap(PieceMapStandard);
             Symbols.SetMap(SymbolMapStandard);
@@ -144,6 +147,7 @@ namespace Damath
 
         public void SetSpeed()
         {
+            Mode = Type.Speed;
             EnableMandatoryCapture = true;
             EnablePromotion = true;
             EnableChainCapture = true;
@@ -155,10 +159,15 @@ namespace Damath
             GlobalTimerSeconds = 300f;
             TurnTimerSeconds = 15f;
             FirstTurn = Side.Bot;
-            EnableCheats = false;
+            EnableCheats = true;
 
             Pieces.SetMap(PieceMapStandard);
             Symbols.SetMap(SymbolMapStandard);
+        }
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            
         }
     }
 }
