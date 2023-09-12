@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEngine.Networking;
 using Unity.Netcode;
 using Unity.VisualScripting;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Damath
 {
@@ -34,8 +36,12 @@ namespace Damath
         public float Score = 0f;
         public bool IsPlaying = false;
         public bool IsModerator = false;
+        public bool IsControllable = false;
         public bool IsAI = false;
         public Cell SelectedCell = null;
+        public Piece SelectedPiece = null;
+        private Piece DraggedPiece = null;
+        private bool IsHolding;
 
         void Awake()
         {
@@ -47,12 +53,15 @@ namespace Damath
             Init();
             Game.Events.OnMatchBegin += SetConsoleOperator;
             Game.Events.OnCellDeselect += DeselectCell;
+            Game.Events.OnLobbyStart += InitOnline;
         }
 
         void OnDisable()
         {
             Game.Events.OnMatchBegin -= SetConsoleOperator;
             Game.Events.OnCellDeselect -= DeselectCell;
+            Game.Events.OnPieceMove -= IMadeAMove;
+            Game.Events.OnLobbyStart -= InitOnline;
         }
         
         void Update()
@@ -67,10 +76,16 @@ namespace Damath
             }
         }
 
+        public void InitOnline(Lobby lobby)
+        {
+            Game.Events.OnPieceMove += IMadeAMove;
+        }
+
         public void Init()
         {
             Name = Game.Main.Nickname;
             name = $"{Game.Main.Nickname} (Player)";
+            Game.Events.PlayerCreate(this);
         }
 
         public void DeselectCell(Cell cell)
@@ -118,23 +133,32 @@ namespace Damath
 
         void DetectRaycast()
         {
+            if (Input.GetMouseButtonDown(0))
+            {
+                CastRay();
+            }
+
             if (Input.GetMouseButton(0))
             {
-                if (Input.GetMouseButtonDown(0))
+                Debug.Log("hold");
+                Game.Events.PlayerHold(this);
+
+                if (Input.GetMouseButtonUp(0))
                 {
-                    Game.Events.PlayerHold(this);
-                
-                    if (Input.GetMouseButtonUp(0))
-                    {
-                        Game.Events.PlayerRelease(this);
-                    }
+                    Debug.Log("release");
+                    Game.Events.PlayerRelease(this);
                 }
             }
 
             if (Input.GetMouseButtonDown(0))
             {
                 CastRay();
-                LeftClick();
+                SelectPiece();
+            }
+            
+            if (Input.GetMouseButtonUp(0))
+            {
+                SelectPiece();
             }
 
             if (Input.GetMouseButtonDown(1))
@@ -144,25 +168,57 @@ namespace Damath
             }
         }
 
-        RaycastHit2D CastRay()
+        void CastRay()
         {
-            Hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);            
-            return Hit;
-        }
-        
-        public void LeftClick()
-        {
+            if (!IsControllable) return;
+
+            Hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);  
+
             if (Hit.collider == null) return;
 
             if (Hit.collider.CompareTag("Cell"))
             {
-                SelectCell();
+                SelectedCell = Hit.collider.gameObject.GetComponent<Cell>();
+                // SelectCell();
+
+            } else if (Hit.collider.CompareTag("Piece"))
+            {
+                SelectedPiece = Hit.collider.gameObject.GetComponent<Piece>();
+
+                DraggedPiece = Piece.Create(SelectedPiece);
+
+                // SelectedPiece.SelectAs(this);
+
             } else if (Hit.collider.CompareTag("Background"))
             {
                 Debug.Log("Left clicked background");
                 Game.Events.CellDeselect(SelectedCell);
             }
-            Game.Events.PlayerLeftClick(this);
+            Game.Events.PlayerLeftClick(this);        
+        }
+        
+        public void LeftClick()
+        {
+        }
+
+        public void SelectCell()
+        {
+            if (SelectedCell == null) return;
+
+            Game.Events.PlayerSelectCell(this, SelectedCell);
+        }
+
+        public void SelectPiece()
+        {
+            if (SelectedPiece == null) return;
+
+            DraggedPiece = null;
+            Game.Events.PlayerSelectPiece(this, SelectedPiece);
+        }
+
+        public void HoldPiece(Piece piece)
+        {
+
         }
 
         public void RightClick()
@@ -180,10 +236,50 @@ namespace Damath
             Game.Events.PlayerRightClick(this);
         }
 
-        public void SelectCell()
+        private void IMadeAMove(Move move)
         {
-            SelectedCell = Hit.collider.gameObject.GetComponent<Cell>();
-            Game.Events.PlayerSelectCell(this);
+            Debug.Log($"I made a move");
+            
+            int[] moveData = new int[]
+            {
+                move.originCell.Col,
+                move.originCell.Row,
+                move.destinationCell.Col,
+                move.destinationCell.Row
+            };
+          
+            Game.Console.Log("Sending move data to server...");
+            SendMoveDataServerRpc(moveData);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void SendMoveDataServerRpc(int[] moveData, ServerRpcParams serverRpcParams = default)
+        {
+            Game.Console.Log("Received move data");
+            var senderClientId = serverRpcParams.Receive.SenderClientId;
+
+            Game.Console.Log("Sending move data to clients...");
+            ReceiveMoveDataClientRpc(moveData, GetClientsExcept(senderClientId));
+        }
+
+        private ClientRpcParams GetClientsExcept(ulong exceptedClientId)
+        {
+            var target = new ClientRpcParams()
+            {
+                Send = new ClientRpcSendParams()
+                {
+                    // This should get players from the lobby tho (?)
+                    TargetClientIds = Network.Main.ConnectedClientsIds.Where(x => x != exceptedClientId).ToArray()
+                }
+            };
+            return target;
+        }
+
+        [ClientRpc]
+        public void ReceiveMoveDataClientRpc(int[] command, ClientRpcParams clientRpcParams)
+        {
+            Game.Console.Log("Received client rpc");
+            Game.Console.Log($"Someone made a move {command}");
         }
     }
 }

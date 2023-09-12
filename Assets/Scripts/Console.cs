@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using TMPro;
 using Unity.Netcode.Transports.UTP;
+using System.Data.Common;
 
 namespace Damath
 {
@@ -42,12 +43,6 @@ namespace Damath
                 if (Window.IsVisible) input.Select();
             }
         }
-
-        public void OnEnable()
-        {
-            Game.Events.OnMatchBegin += ReceiveMatchInstance;
-            Game.Events.OnBoardUpdateCellmap += ReceiveCellmap;
-        }
         
         public void OnDisable()
         {
@@ -77,7 +72,8 @@ namespace Damath
 
         void SubscribeToEvents()
         {
-
+            Game.Events.OnMatchBegin += ReceiveMatchInstance;
+            Game.Events.OnBoardUpdateCellmap += ReceiveCellmap;
         }
 
         void ReceiveCellmap(Dictionary<(int, int), Cell> cellmap)
@@ -146,6 +142,9 @@ namespace Damath
 
             CreateCommand("draw",
                           "Offer a draw.").AddCallback();
+
+            CreateCommand("flip",
+                          "Flips the board.").AddCallback(Command_Flip);
                         
             CreateCommand("forfeit",
                           "Forfeit match.").AddCallback();
@@ -220,23 +219,23 @@ namespace Damath
             List<string> args = new(command.Split());
             Command toInvoke;
 
-            try
-            {
+            // try
+            // {
                 toInvoke = Commands[args[0]];
 
-                try
-                {
+                // try
+                // {
                     toInvoke.Invoke(args);
-                } catch
-                {  
-                    PromptInvalid(args[0]);
-                    return;
-                }
-            } catch
-            {
-                PromptInvalid();
-                return;
-            }
+                // } catch
+                // {  
+                //     PromptInvalid(args[0]);
+                //     return;
+                // }
+            // } catch
+            // {
+            //     PromptInvalid();
+            //     return;
+            // }
         }
 
         // Console commands list
@@ -252,9 +251,12 @@ namespace Damath
 
         void Command_Connect(List<string> args)
         {
-            if (args[1] == "localhost") args[1] = "127.0.0.1";
-            Game.Network.GetComponent<UnityTransport>().SetConnectionData(args[1], (ushort)7777);
-            Game.Network.StartClient();
+            Network.Main.JoinLobby(args[1]);
+        }
+
+        void Command_Flip(List<string> args)
+        {
+            Game.Events.BoardFlip();
         }
 
         void Command_Help(List<string> args)
@@ -280,7 +282,8 @@ namespace Damath
 
         void Command_Host(List<string> args)
         {
-            Game.Main.Host();
+            Network.Main.CreateLobby();
+            Network.Main.Host();
         }
 
         void Command_Lobby(List<string> args)

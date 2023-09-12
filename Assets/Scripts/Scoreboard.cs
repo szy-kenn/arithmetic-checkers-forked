@@ -8,44 +8,20 @@ namespace Damath
 {
     public class Scoreboard : MonoBehaviour
     {
-        public Ruleset Rules  { get; private set; }
-        private readonly Dictionary<Side, Player> Players = new();
+        public Ruleset Rules { get; private set; }
         [SerializeField] private TextMeshProUGUI BlueScore;
         [SerializeField] private TextMeshProUGUI OrangeScore;
 
         void OnEnable()
         {
-            Game.Events.OnPlayerCreate += GetPlayer;
-            Game.Events.OnPlayerJoin += GetPlayer;
-            Game.Events.OnMatchBegin += Init;
             Game.Events.OnRulesetCreate -= ReceiveRuleset;
             Game.Events.OnPieceCapture += Compute;
         }
 
         void OnDisable()
         {
-            Game.Events.OnPlayerCreate -= GetPlayer;
-            Game.Events.OnPlayerJoin -= GetPlayer;
-            Game.Events.OnMatchBegin -= Init;
             Game.Events.OnRulesetCreate -= ReceiveRuleset;
             Game.Events.OnPieceCapture -= Compute;
-        }
-
-        public void Init(MatchController match)
-        {
-            foreach (var kv in Players)
-            {
-                Player player = kv.Value;
-                if (player != null)
-                {
-                    player.SetScore(0f);
-                }
-            }
-            
-            if (Settings.EnableDebugMode)
-            {
-                Game.Console.Log($"[DEBUG]: Scoreboard initialized ");
-            }
         }
 
         public void ReceiveRuleset(Ruleset rules)
@@ -53,16 +29,15 @@ namespace Damath
             Rules = rules;
         }        
 
-        public void GetPlayer(Player player)
+        public void Refresh(Player player)
         {
-            Players.Add(player.Side, player);
-        }
-
-
-        public void Refresh()
-        {
-            BlueScore.text = Players[Side.Bot].Score.ToString();
-            OrangeScore.text = Players[Side.Top].Score.ToString();
+            if (player.Side == Side.Bot)
+            {
+                BlueScore.text = player.Score.ToString();
+            } else if (player.Side == Side.Top)
+            {
+                OrangeScore.text = player.Score.ToString();
+            }
         }
 
         public void Compute(Move move)
@@ -84,8 +59,8 @@ namespace Damath
             Game.Console.Log($"[ACTION]: {move.capturingPiece.Value} {operation} {move.capturedPiece.Value} = {score}");
 
             move.SetScoreValue(score);
-            AddScore(move.capturingPiece.Owner, score);
-            Refresh();
+            AddScore(move.Player, score);
+            Refresh(move.Player);
         }
 
         public void AddScore(Player player, float value)

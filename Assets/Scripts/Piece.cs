@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using TMPro;
 using System;
+using UnityEngine.EventSystems;
 
 namespace Damath
 {
@@ -22,23 +23,17 @@ namespace Damath
         public List<Sprite> Sprites;
         public Color Color;
         public Color Shadow;
-
+        public bool IsSelected = false;
+        public Player SelectedBy = null;
         [SerializeField] RectTransform rect;
         [SerializeField] TextMeshPro tmp;
         [SerializeField] SpriteRenderer overlayTop;
         [SerializeField] SpriteRenderer overlayShadow;
+        private static GameObject prefab;
 
-        public Piece(Side side, Color color, string value, bool isKing)
+        void Awake()
         {
-            Side = side;
-            Color = color;
-            Value = value;
-            IsKing = isKing;
-        }
-
-        public List<Move> GetMoves(Piece piece)
-        {
-            return new List<Move>();
+            prefab = Resources.Load<GameObject>("Prefabs/Chip");
         }
         
         void Start()
@@ -52,6 +47,80 @@ namespace Damath
             {
                 overlayTop.sprite = Sprites[0];
             }
+        }
+
+        public static Piece Create(int col, int row)
+        {
+            Cell cell = Board.GetCell(col, row);
+            return Create(cell);
+        }
+        
+        public static Piece Create(Cell cell)
+        {
+            Piece newPiece = Instantiate(prefab).GetComponent<Piece>();
+            return newPiece;
+        }
+
+        public static Piece Create(Piece piece)
+        {
+            Piece newPiece = Instantiate(piece.gameObject).GetComponent<Piece>();
+            return newPiece;
+        }
+
+        public void Init(Side side, string value, bool isKing)
+        {
+
+        }
+        
+        public List<Move> GetMoves(Piece piece)
+        {
+            return new List<Move>();
+        }
+
+        public void OnMouseEnter()
+        {
+            Debug.Log("enter");
+        }
+
+        public void OnMouseDown()
+        {
+            Debug.Log("clicked on piece");
+            Game.Events.PieceSelected(this);
+        }
+        
+        public void OnMouseDrag()
+        {
+            if (!IsSelected) return;
+            Debug.Log("dragging piece");
+        }
+
+        public void Select()
+        {
+            if (IsSelected) return;
+
+            IsSelected = true;
+            SelectedBy = null;
+            // Game.Events.PieceSelect(this);
+        }
+
+        /// <summary>
+        /// Select this piece as a player.
+        /// </summary>
+        /// <param name="player"></param>
+        public void SelectAs(Player player)
+        {
+            if (IsSelected) return;
+            // if (player.Side != Side) return;
+
+            IsSelected = true;
+            SelectedBy = player;
+            Game.Events.PlayerSelectPiece(player, this);
+        }
+        
+        public void Deselect()
+        {
+            IsSelected = false;
+            SelectedBy = null;
         }
 
         public void SetCell(Cell cell)

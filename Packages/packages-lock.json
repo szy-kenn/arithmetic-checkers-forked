@@ -1,5 +1,14 @@
 {
   "dependencies": {
+    "com.community.netcode.extensions": {
+      "version": "https://github.com/Unity-Technologies/multiplayer-community-contributions.git?path=/com.community.netcode.extensions",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.netcode.gameobjects": "1.0.2"
+      },
+      "hash": "b2265b5a650ccc1c4ea4526351839b1c6e3263e0"
+    },
     "com.unity.2d.animation": {
       "version": "7.0.11",
       "depth": 1,

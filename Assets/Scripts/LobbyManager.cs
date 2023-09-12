@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Unity.Netcode;
+using System.Text.RegularExpressions;
 
 namespace Damath
 {
@@ -15,36 +16,44 @@ namespace Damath
 
         void Awake()
         {
-            Game.Events.OnLobbyHost += JoinHost;
+            // Don't forget to unsub!
+            Game.Events.OnLobbyHost += RetrieveLobby;
             Game.Events.OnLobbyJoin += GiveLobby;
+            Game.Events.OnPlayerCreate += SetSides;
+        }
+
+        public void SetSides(Player player)
+        {
+            if (!Network.Main.IsListening) return;
+
+            // This should is sides are swapped via rules
+            if (Lobby.IsHost)
+            {
+                player.SetSide(Side.Bot);
+                player.IsControllable = true; // It's inside so you can't control the other player!
+            } else if (Lobby.IsOpponent)
+            {
+                player.SetSide(Side.Top);
+                player.IsControllable = true;
+            }
         }
         
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
 
-            if (IsServer)
-            {
-                button.SetText("Start");
-                button.Tooltip.SetText("Start match when opponent is ready.");
-                Game.Network.OnClientConnectedCallback += OnClientConnectedCallback;
-            } else
-            {
-                button.SetText("Ready");
-                button.Tooltip.SetText("Ready to let host begin match.");
-            }
+            Network.Main.OnClientConnectedCallback += OnClientConnectedCallback;
         }
 
-        public void JoinHost(Lobby lobby)
+        public void RetrieveLobby(Lobby lobby)
         {
             Lobby = lobby;
-            Lobby.ConnectPlayer(Game.Network.LocalClientId);
             Lobby.SetHost(Game.Network.LocalClientId);
         }
 
-        public void GiveLobby(Lobby lobby)
+        public void GiveLobby(ulong clientId, Lobby lobby)
         {
-            if (IsServer) return;
+            if (IsHost) return;
             if (lobby == null) return;
 
             ReceiveLobbyClientRpc((int)lobby.Ruleset.Mode);
@@ -65,9 +74,16 @@ namespace Damath
             if (IsServer)
             {
                 if (Lobby.HasPlayer(clientId)) return;
+
+                if (!Lobby.HasOpponent)
+                {
+                    Lobby.SetOpponent(clientId);
+                    Game.Console.Log($"Client {clientId} joined lobby as opponent");
+                } else
+                {
+                    Lobby.ConnectPlayer(clientId);
+                }
                 
-                Lobby.ConnectPlayer(clientId);
-                Game.Console.Log("Client joined with id " + clientId);
                 
                 ClientRpcParams clientRpcParams = new()
                 {
@@ -77,6 +93,7 @@ namespace Damath
                     }
                 };
 
+                Game.Console.Log("Passing ruleset to opponent");
                 if (Lobby.Ruleset.Mode != Ruleset.Type.Custom)
                 {
                     ReceiveLobbyInfoClientRpc((int)Lobby.Ruleset.Mode, clientRpcParams);
@@ -90,8 +107,13 @@ namespace Damath
         [ClientRpc]
         public void ReceiveLobbyInfoClientRpc(int mode, ClientRpcParams clientRpcParams)
         {
+            Game.Console.Log($"Fetching ruleset from lobby");
             if (IsOwner) return;
-            Lobby.SetRuleset((Ruleset.Type)mode);
+            Game.Console.Log($"Fetched ruleset {mode} from lobby");
+
+            // This should handle other lobby information as well
+            Lobby = new(new ((Ruleset.Type)mode));
+            Game.Console.Log($"Joined lobby with match {Lobby.Ruleset.Mode}");
         }
 
         /// <summary>
@@ -138,7 +160,7 @@ namespace Damath
 
             if (Lobby.OpponentIsReady)
             {
-                Game.Network.OnClientConnectedCallback -= OnClientConnectedCallback;
+                // Game.Network.OnClientConnectedCallback -= OnClientConnectedCallback;
                 BeginMatchClientRpc();
             }
         }

@@ -14,12 +14,23 @@ namespace Damath
         public bool IsValidMove = false;
         public Operation Operation;
         public List<Sprite> Sprite;
+        private static GameObject prefab;
 
         SpriteRenderer spriteRenderer;
 
         void Awake()
         {
+            prefab = Resources.Load<GameObject>("Prefabs/Cell");
+
             spriteRenderer = GetComponent<SpriteRenderer>();
+        }
+
+        public static Cell Create(int col, int row)
+        {
+            Cell cell = Instantiate(prefab).GetComponent<Cell>();
+            cell.SetColRow(col, row);
+
+            return cell;
         }
 
         public void Refresh()

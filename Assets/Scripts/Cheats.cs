@@ -7,11 +7,8 @@ namespace Damath
         public Ruleset Rules { get; private set; }
         public Window PieceMenu = null;
         public Window ToolsMenu = null;
-        public Window ValuwWindow = null;
         public Cell SelectedCell;
         public bool EnableDebug = true;
-        public Player WhoClicked = null;
-        [SerializeField] GameObject newPieceWindowPrefab;
 
         void Awake()
         {
@@ -36,18 +33,14 @@ namespace Damath
         
         public void Init()
         {
-            if (Rules.EnableCheats)
-            {
-                Game.Console.Log($"[CHEATS]: Cheats enabled for this match.");
-            }
         }
 
         public void Init(MatchController match)
         {
-            Init();
+            Game.Console.Log($"Cheats enabled for this match");
         }
 
-        #region Listener Functions
+        #region Methods
 
         public void AddPiece()
         {
@@ -108,6 +101,7 @@ namespace Damath
             //     if (c.Value.piece != null) c.Value.piece.Demote();
             // }
         }
+        
         #endregion
 
         public void CheckPlayer(Player player)

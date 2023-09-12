@@ -17,21 +17,22 @@ namespace Damath
         
         void Start()
         {
-            Game.Events.OnPieceSelect += Move;
-            Game.Events.OnPieceDeselect += Hide;
+            Game.Events.OnPlayerSelectPiece += Move;
             Game.Events.OnPieceCapture += Hide;
             Game.Events.OnPieceDone += Hide;
+            Game.Events.OnDeselect += Hide;
         }
         
         void OnDisable()
         {
-            Game.Events.OnPieceSelect -= Move;
-            Game.Events.OnPieceDeselect -= Hide;
+            Game.Events.OnPlayerSelectPiece -= Move;
+            Game.Events.OnDeselect -= Hide;
             Game.Events.OnPieceCapture += Hide;
             Game.Events.OnPieceDone -= Hide;
+            Game.Events.OnDeselect -= Hide;
         }
 
-        public void Move(Piece piece)
+        public void Move(Player player, Piece piece)
         {
             Show();
             transform.position = piece.Cell.transform.position;

@@ -10,6 +10,7 @@ TagManager:
   - MainCanvas
   - Board
   - Network
+  - Piece
   layers:
   - Default
   - TransparentFX
@@ -59,8 +60,11 @@ TagManager:
   - name: Indicators
     uniqueID: 3098051127
     locked: 0
-  - name: Chips
+  - name: Pieces
     uniqueID: 3827396539
+    locked: 0
+  - name: Held Pieces
+    uniqueID: 762693411
     locked: 0
   - name: Windows
     uniqueID: 4017613001

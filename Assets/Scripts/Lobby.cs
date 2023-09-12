@@ -6,45 +6,27 @@ using UnityEngine;
 
 namespace Damath
 {
-    public class LobbyRequestData : INetworkSerializable
-    {
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-        {
-            
-        }
-    }
     /// <summary>
     /// Lobby before the match begins.
     /// </summary>
-    public class Lobby
+    public class Lobby : INetworkSerializable
     {
-        public int Id { get ; private set; }
-        public int MaximumPlayers = 2;
         public bool IsPrivate { get; private set; }
-        public bool IsFull { get; private set; }
-        public bool AllowExcess = true;
         public string Password { get; private set; }
         public List<ulong> ConnectedClients = new();
         public ulong Host;
         public ulong Opponent;
-        public bool OpponentIsReady;
+        public bool HasOpponent = false;
+        public bool IsHost = false;
+        public bool IsOpponent = false;
+
         public Ruleset Ruleset { get; private set; }
+        public bool OpponentIsReady;
 
-        public Lobby(int id, bool isPrivate)
+        public Lobby(Ruleset ruleset)
         {
-            Id = id;
-            IsPrivate = isPrivate;
-            IsFull = false;
+            Ruleset = ruleset;
         }
-
-        // public LobbyRequestData GetLobbyInfo()
-        // {
-        //     LobbyRequestData lobbyRequestData = new()
-        //     {
-
-        //     };         
-        // }
-
         public void SetPrivacy(bool value)
         {
             IsPrivate = value;
@@ -53,13 +35,24 @@ namespace Damath
         public void SetHost(ulong clientId)
         {
             Host = clientId;
+            IsHost = true;
+            ConnectedClients.Add(clientId);
+            Game.Events.LobbyJoin(clientId, this);
+        }
+
+        public void SetOpponent(ulong clientId)
+        {
+            Opponent = clientId;
+            IsHost = false;
+            HasOpponent = true;
+            ConnectedClients.Add(clientId);
+            Game.Events.LobbyJoin(clientId, this);
         }
 
         public void ConnectPlayer(ulong clientId)
         {
             ConnectedClients.Add(clientId);
-            if (ConnectedClients.Count == MaximumPlayers) IsFull = true;
-            Game.Events.LobbyJoin(this);
+            Game.Events.LobbyJoin(clientId, this);
         }
         
         public bool HasPlayer(ulong clientId)
@@ -81,6 +74,11 @@ namespace Damath
         public void SetRuleset(Ruleset.Type type)
         {
             Ruleset = new(type);
+        }
+        
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            
         }
     }
 }
