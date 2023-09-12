@@ -149,12 +149,6 @@ namespace Damath
                     Game.Events.PlayerRelease(this);
                 }
             }
-
-            if (Input.GetMouseButtonDown(0))
-            {
-                CastRay();
-                SelectPiece();
-            }
             
             if (Input.GetMouseButtonUp(0))
             {
@@ -179,14 +173,13 @@ namespace Damath
             if (Hit.collider.CompareTag("Cell"))
             {
                 SelectedCell = Hit.collider.gameObject.GetComponent<Cell>();
-                // SelectCell();
+                SelectCell();
 
             } else if (Hit.collider.CompareTag("Piece"))
             {
                 SelectedPiece = Hit.collider.gameObject.GetComponent<Piece>();
 
-                DraggedPiece = Piece.Create(SelectedPiece);
-
+                // DraggedPiece = Piece.Create(SelectedPiece);
                 // SelectedPiece.SelectAs(this);
 
             } else if (Hit.collider.CompareTag("Background"))
@@ -195,10 +188,6 @@ namespace Damath
                 Game.Events.CellDeselect(SelectedCell);
             }
             Game.Events.PlayerLeftClick(this);        
-        }
-        
-        public void LeftClick()
-        {
         }
 
         public void SelectCell()
@@ -211,7 +200,6 @@ namespace Damath
         public void SelectPiece()
         {
             if (SelectedPiece == null) return;
-
             DraggedPiece = null;
             Game.Events.PlayerSelectPiece(this, SelectedPiece);
         }
