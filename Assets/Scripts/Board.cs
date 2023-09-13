@@ -188,32 +188,31 @@ namespace Damath
 
         public void Flip()
         {
-            // IT'S NOT FUCKING WORKING
             if (IsFlipped)
             {
                 Game.Console.Log("Unflipping board");
-                cellGroup.transform.Translate(0f, 0f, -180f);
+                cellGroup.transform.Rotate(0f, 0f, -180f);
                 foreach (Transform c in cellGroup.transform)
                 {
-                    c.transform.Translate(0f, 0f, -180f);
+                    c.transform.Rotate(0f, 0f, -180f);
                 }
-                pieceGroup.transform.Translate(0f, 0f, -180f);
+                pieceGroup.transform.Rotate(0f, 0f, -180f);
                 foreach (Transform c in pieceGroup.transform)
                 {
-                    c.transform.Translate(0f, 0f, -180f);
+                    c.transform.Rotate(0f, 0f, -180f);
                 }
             } else
             {
                 Game.Console.Log("Flipping board");
-                cellGroup.transform.Translate(0f, 0f, 180f);
+                cellGroup.transform.Rotate(0f, 0f, 180f);
                 foreach (Transform c in cellGroup.transform)
                 {
-                    c.transform.Translate(0f, 0f, 180f);
+                    c.transform.Rotate(0f, 0f, 180f);
                 }
-                pieceGroup.transform.Translate(0f, 0f, 180f);
+                pieceGroup.transform.Rotate(0f, 0f, 180f);
                 foreach (Transform c in pieceGroup.transform)
                 {
-                    c.transform.Translate(0f, 0f, 180f);
+                    c.transform.Rotate(0f, 0f, 180f);
                 }
             }
             IsFlipped = !IsFlipped;
