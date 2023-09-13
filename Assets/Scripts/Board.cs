@@ -40,6 +40,71 @@ namespace Damath
             //
         }
 
+<<<<<<< Updated upstream
+=======
+        public void Reset()
+        {
+            TurnNumber = 1;
+            TurnOf = Rules.FirstTurn;
+        }
+
+        public void ChangeTurns(Piece piece)
+        {
+            if (TurnOf == Side.Bot)
+            {
+                TurnOf = Side.Top;
+                // TimerManager.orangeTimer.Begin();
+            } else if (TurnOf == Side.Top)
+            {
+                TurnOf = Side.Bot;
+                // TimerManager.blueTimer.Begin();
+            }
+            TurnNumber++;
+
+            ClearValidMoves();
+            Game.Events.ChangeTurn(TurnOf);
+            
+            // Console.Log($"[GAME]: Changed turns");
+
+            // TimerManager.blueTimer.SetTime(60f);
+            // TimerManager.orangeTimer.SetTime(60f);
+        }
+
+        public void Flip()
+        {
+            // IT'S NOT FUCKING WORKING
+            if (IsFlipped)
+            {
+                Game.Console.Log("Unflipping board");
+                cellGroup.transform.Rotate(0f, 0f, -180f);
+                foreach (Transform c in cellGroup.transform)
+                {
+                    c.transform.Rotate(0f, 0f, -180f);
+                }
+                pieceGroup.transform.Rotate(0f, 0f, -180f);
+                foreach (Transform c in pieceGroup.transform)
+                {
+                    c.transform.Rotate(0f, 0f, -180f);
+                }
+            } else
+            {
+                Game.Console.Log("Flipping board");
+                cellGroup.transform.Rotate(0f, 0f, 180f);
+                foreach (Transform c in cellGroup.transform)
+                {
+                    c.transform.Rotate(0f, 0f, 180f);
+                }
+                pieceGroup.transform.Rotate(0f, 0f, 180f);
+                foreach (Transform c in pieceGroup.transform)
+                {
+                    c.transform.Rotate(0f, 0f, 180f);
+                }
+            }
+            IsFlipped = !IsFlipped;
+            Game.Console.Log("Flipped board");
+        }
+
+>>>>>>> Stashed changes
         void OnEnable()
         {
             Game.Events.OnRulesetCreate += ReceiveRuleset;
