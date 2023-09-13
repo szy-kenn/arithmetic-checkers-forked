@@ -40,8 +40,9 @@ namespace Damath
         public bool IsAI = false;
         public Cell SelectedCell = null;
         public Piece SelectedPiece = null;
-        private Piece DraggedPiece = null;
+        private Piece HeldPiece = null;
         private bool IsHolding;
+        public float MouseHeld = 0f;
 
         void Awake()
         {
@@ -52,14 +53,14 @@ namespace Damath
         {
             Init();
             Game.Events.OnMatchBegin += SetConsoleOperator;
-            Game.Events.OnCellDeselect += DeselectCell;
+            Game.Events.OnDeselect += Deselect;
             Game.Events.OnLobbyStart += InitOnline;
         }
 
         void OnDisable()
         {
             Game.Events.OnMatchBegin -= SetConsoleOperator;
-            Game.Events.OnCellDeselect -= DeselectCell;
+            Game.Events.OnDeselect -= Deselect;
             Game.Events.OnPieceMove -= IMadeAMove;
             Game.Events.OnLobbyStart -= InitOnline;
         }
@@ -88,9 +89,10 @@ namespace Damath
             Game.Events.PlayerCreate(this);
         }
 
-        public void DeselectCell(Cell cell)
+        public void Deselect()
         {
             SelectedCell = null;
+            SelectedPiece = null;
         }
 
         void SetConsoleOperator()
@@ -133,15 +135,25 @@ namespace Damath
 
         void DetectRaycast()
         {
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
             {
-                CastRay();
+                Select();
             }
 
             if (Input.GetMouseButton(0))
             {
-                Debug.Log("hold");
-                Game.Events.PlayerHold(this);
+                MouseHeld += 1 * Time.deltaTime;
+
+                if (MouseHeld >= Settings.PieceGrabDelay)
+                {
+                    if (HeldPiece != null)
+                    {
+                        HeldPiece.transform.position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                    }
+                    
+                    Debug.Log("hold");
+                    Game.Events.PlayerHold(this);
+                }
 
                 if (Input.GetMouseButtonUp(0))
                 {
@@ -149,16 +161,17 @@ namespace Damath
                     Game.Events.PlayerRelease(this);
                 }
             }
-            
+
             if (Input.GetMouseButtonUp(0))
             {
-                SelectPiece();
+                MouseHeld = 0f;
+
+                Select();
             }
 
-            if (Input.GetMouseButtonDown(1))
+            if (Input.GetMouseButtonUp(1))
             {
-                CastRay();
-                RightClick();
+                // CastRay();
             }
         }
 
@@ -167,20 +180,23 @@ namespace Damath
             if (!IsControllable) return;
 
             Hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);  
+        }
+        
+        void Select()
+        {
+            CastRay();
 
             if (Hit.collider == null) return;
 
             if (Hit.collider.CompareTag("Cell"))
             {
                 SelectedCell = Hit.collider.gameObject.GetComponent<Cell>();
-                SelectCell();
+                // Game.Events.PlayerSelectCell(this, SelectedCell);
 
             } else if (Hit.collider.CompareTag("Piece"))
             {
                 SelectedPiece = Hit.collider.gameObject.GetComponent<Piece>();
-
-                // DraggedPiece = Piece.Create(SelectedPiece);
-                // SelectedPiece.SelectAs(this);
+                // Game.Events.PlayerSelectPiece(this, SelectedPiece);
 
             } else if (Hit.collider.CompareTag("Background"))
             {
@@ -192,36 +208,13 @@ namespace Damath
 
         public void SelectCell()
         {
-            if (SelectedCell == null) return;
-
-            Game.Events.PlayerSelectCell(this, SelectedCell);
-        }
-
-        public void SelectPiece()
-        {
-            if (SelectedPiece == null) return;
-            DraggedPiece = null;
-            Game.Events.PlayerSelectPiece(this, SelectedPiece);
+            
         }
 
         public void HoldPiece(Piece piece)
         {
-
-        }
-
-        public void RightClick()
-        {
-            if (Hit.collider == null) return;
-
-            if (Hit.collider.CompareTag("Cell"))
-            {
-                SelectCell();
-            } else if (Hit.collider.CompareTag("Background"))
-            {
-                Debug.Log("Right clicked background");
-                Game.Events.CellDeselect(SelectedCell);
-            }
-            Game.Events.PlayerRightClick(this);
+            HeldPiece = Piece.Create(piece);
+            Game.Events.PlayerHoldPiece(this, HeldPiece);
         }
 
         private void IMadeAMove(Move move)

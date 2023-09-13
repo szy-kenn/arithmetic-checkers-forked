@@ -74,40 +74,6 @@ namespace Damath
             // TimerManager.orangeTimer.SetTime(60f);
         }
 
-        public void Flip()
-        {
-            // IT'S NOT FUCKING WORKING
-            if (IsFlipped)
-            {
-                Game.Console.Log("Unflipping board");
-                cellGroup.transform.Translate(0f, 0f, -180f);
-                foreach (Transform c in cellGroup.transform)
-                {
-                    c.transform.Translate(0f, 0f, -180f);
-                }
-                pieceGroup.transform.Translate(0f, 0f, -180f);
-                foreach (Transform c in pieceGroup.transform)
-                {
-                    c.transform.Translate(0f, 0f, -180f);
-                }
-            } else
-            {
-                Game.Console.Log("Flipping board");
-                cellGroup.transform.Translate(0f, 0f, 180f);
-                foreach (Transform c in cellGroup.transform)
-                {
-                    c.transform.Translate(0f, 0f, 180f);
-                }
-                pieceGroup.transform.Translate(0f, 0f, 180f);
-                foreach (Transform c in pieceGroup.transform)
-                {
-                    c.transform.Translate(0f, 0f, 180f);
-                }
-            }
-            IsFlipped = !IsFlipped;
-            Game.Console.Log("Flipped board");
-        }
-
         void OnEnable()
         {
             Game.Events.OnRulesetCreate += ReceiveRuleset;
@@ -130,6 +96,7 @@ namespace Damath
             Game.Events.OnPlayerSelectCell -= SelectCellAsPlayer;
             Game.Events.OnPlayerSelectPiece -= SelectPieceAsPlayer;
             Game.Events.OnPieceDeselect -= ClearValidMoves;
+            Game.Events.OnPlayerHoldPiece -= DragPiece;
             // Game.Events.OnMoveSelect -= SelectMove;
             Game.Events.OnMoveTypeRequest -= UpdateMoveType;
             Game.Events.OnRequireCapture -= UpdateRequireCaptureState;
@@ -213,6 +180,46 @@ namespace Damath
 
         #endregion
 
+        public void DragPiece(Player player, Piece piece)
+        {
+            Piece.Create(piece).name += " (Held)";
+            
+        }
+
+        public void Flip()
+        {
+            // IT'S NOT FUCKING WORKING
+            if (IsFlipped)
+            {
+                Game.Console.Log("Unflipping board");
+                cellGroup.transform.Translate(0f, 0f, -180f);
+                foreach (Transform c in cellGroup.transform)
+                {
+                    c.transform.Translate(0f, 0f, -180f);
+                }
+                pieceGroup.transform.Translate(0f, 0f, -180f);
+                foreach (Transform c in pieceGroup.transform)
+                {
+                    c.transform.Translate(0f, 0f, -180f);
+                }
+            } else
+            {
+                Game.Console.Log("Flipping board");
+                cellGroup.transform.Translate(0f, 0f, 180f);
+                foreach (Transform c in cellGroup.transform)
+                {
+                    c.transform.Translate(0f, 0f, 180f);
+                }
+                pieceGroup.transform.Translate(0f, 0f, 180f);
+                foreach (Transform c in pieceGroup.transform)
+                {
+                    c.transform.Translate(0f, 0f, 180f);
+                }
+            }
+            IsFlipped = !IsFlipped;
+            Game.Console.Log("Flipped board");
+        }
+
         public void GetPlayer(Player player)
         {
             if (Settings.EnableDebugMode)
@@ -284,17 +291,9 @@ namespace Damath
 
         public void SelectCellAsPlayer(Player player, Cell cell)
         {
-            // SelectCell(cell);
+            if (!cell.IsValidMove) Deselect();
 
-            // if (cell.HasPiece)
-            // {
-            //     SelectPieceAsPlayer(player, cell.Piece);
-            // } else
-            // {
-                if (!cell.IsValidMove) Deselect();
-
-                SelectMovecellAsPlayer(player, cell);
-            // }
+            SelectMovecellAsPlayer(player, cell);
         }
 
         public void SelectPiece(Piece piece)

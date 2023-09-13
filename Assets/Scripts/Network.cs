@@ -44,7 +44,7 @@ namespace Damath
         }
         
         [ServerRpc]
-        public void RequestLobbiesServerRpc(ServerRpcParams serverRpcParams)
+        public void RequestLobbiesServerRpc(ServerRpcParams serverRpcParams = default)
         {
             if (!IsServer) return;
 

@@ -31,6 +31,7 @@ namespace Damath
         public event Action<Player, string> OnPlayerCommand;
         public event Action<Player, Cell> OnPlayerSelectCell;
         public event Action<Player, Piece> OnPlayerSelectPiece;
+        public event Action<Player, Piece> OnPlayerHoldPiece;
         public event Action<Player, Move> OnPlayerSelectMove;
 
         #endregion
@@ -149,27 +150,32 @@ namespace Damath
         /// <summary>
         /// Fired when a player selects a cell.
         /// </summary>
-        /// <param name="player"></param>
+        /// <param name="actor"></param>
         /// <param name="cell"></param>
-        public void PlayerSelectCell(Player player, Cell cell)
+        public void PlayerSelectCell(Player actor, Cell cell)
         {
-            OnPlayerSelectCell?.Invoke(player, cell);
+            OnPlayerSelectCell?.Invoke(actor, cell);
         }
 
         /// <summary>
         /// Fired when a player selects a valid piece.
         /// </summary>
-        /// <param name="player"></param>
+        /// <param name="actor"></param>
         /// <param name="piece"></param>
-        public void PlayerSelectPiece(Player player, Piece piece)
+        public void PlayerSelectPiece(Player actor, Piece piece)
         {
-            OnPlayerSelectPiece?.Invoke(player, piece);
+            OnPlayerSelectPiece?.Invoke(actor, piece);
+        }
+        
+        public void PlayerHoldPiece(Player actor, Piece piece)
+        {
+            OnPlayerHoldPiece?.Invoke(actor, piece);
         }
 
         /// <summary>
         /// Fired when a player selects a valid move.
         /// </summary>
-        /// <param name="player"></param>
+        /// <param name="actor"></param>
         /// <param name="piece"></param>
         public void PlayerSelectMove(Player player, Move move)
         {
