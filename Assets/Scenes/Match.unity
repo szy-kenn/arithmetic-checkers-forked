@@ -4824,7 +4824,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2602413380794016175, guid: 341aeaf743d710c4d817734bc6417665, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 113.905
       objectReference: {fileID: 0}
     - target: {fileID: 2602413380794016175, guid: 341aeaf743d710c4d817734bc6417665, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -5583,11 +5583,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9b2e942857370e4bae797ab37a978ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SelectedCell: {fileID: 0}
-  SelectedPiece: {fileID: 0}
-  EnablePlayerControls: 0
   playerPrefab: {fileID: 8192390590991075092, guid: 77738396a965bd541a08b2db11d00798, type: 3}
-  LobbyHandler: {fileID: 0}
 --- !u!1 &7226299033803664618
 GameObject:
   m_ObjectHideFlags: 0

@@ -46,20 +46,26 @@ namespace Damath
             SetInteractableAfter(true, SpeedInSeconds);
             if (Value)
             {
-                LeanTween.move(knobRect, new Vector3(35f, 0f, 0f), SpeedInSeconds).setEaseOutExpo();
+                LeanTween.move(knobRect, new Vector3(35f, 0f, 0f), SpeedInSeconds)
+                .setEaseOutExpo();
+
                 LeanTween.value(backgroundImage.gameObject, 0.1f, 1f, SpeedInSeconds)
-                    .setOnUpdate( (i) =>
-                    {
-                        backgroundImage.color = Color.Lerp(BackgroundColorOff, BackgroundColorOn, i);
-                    }).setEaseOutExpo();
+                .setEaseOutExpo()
+                .setOnUpdate( (i) =>
+                {
+                    backgroundImage.color = Color.Lerp(BackgroundColorOff, BackgroundColorOn, i);
+                });
             } else
             {
-                LeanTween.move(knobRect, new Vector3(-35f, 0f, 0f), SpeedInSeconds).setEaseOutExpo();
+                LeanTween.move(knobRect, new Vector3(-35f, 0f, 0f), SpeedInSeconds)
+                .setEaseOutExpo();
+
                 LeanTween.value(backgroundImage.gameObject, 0.1f, 1f, SpeedInSeconds)
-                    .setOnUpdate( (i) =>
-                    {
-                        backgroundImage.color = Color.Lerp(BackgroundColorOn, BackgroundColorOff, i);
-                    }).setEaseOutExpo();
+                .setEaseOutExpo()
+                .setOnUpdate( (i) =>
+                {
+                    backgroundImage.color = Color.Lerp(BackgroundColorOn, BackgroundColorOff, i);
+                });
             }
         }
 

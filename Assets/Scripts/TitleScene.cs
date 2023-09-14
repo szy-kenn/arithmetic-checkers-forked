@@ -6,8 +6,7 @@ namespace Damath
 {
     public class TitleScene : MonoBehaviour
     {
-        [SerializeField] Button playButton;
-        [SerializeField] Button optionsButton;
+        public Ruleset Ruleset;
 
     }
 }

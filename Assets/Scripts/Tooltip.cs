@@ -3,35 +3,28 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
+using UnityEditor;
 
 namespace Damath
 {
-    public class Tooltip : MonoBehaviour, IUIElement, IHoverable
+    public class Tooltip : MonoBehaviour, IHoverable
     {
-        [field: SerializeField] public bool IsVisible { get; set; }   
-        [TextArea] public string Text;
+        public bool Enable = true;
+        public bool IsVisible;
         public float ShowDelay = 1f;
         public float HideDelay = 0f;
         public bool FadeTransition = true;
         public float FadeInDuration = 0.25f;
         public float FadeOutDuration = 0.25f;
-        public bool Enable = true;
         public bool IsHovered { get; set; }
-        private RectTransform rect;
-        private IUIElement element;
-        private Image image;
-        private TextMeshProUGUI tmpUGUI;
-
-        void Awake()
-        {
-            rect = GetComponent<RectTransform>();
-            image = GetComponent<Image>();
-            tmpUGUI = GetComponentInChildren<TextMeshProUGUI>();
-            tmpUGUI.text = Text;
-        }
+        [SerializeField] private IUIElement element;
+        [SerializeField] private RectTransform rect;
+        [SerializeField] private Image image;
+        [SerializeField] private TextMeshProUGUI tmpUGUI;
 
         void Update()
         {
+            // move this somewhere else
             if (IsVisible)
             {
                 gameObject.transform.position = new Vector2(Input.mousePosition.x + (rect.sizeDelta.x * 0.55f),
@@ -39,8 +32,11 @@ namespace Damath
             }
         }
 
+
         void Start()
         {
+            if (!Enable) return;
+
             image.color = new Color(image.color.r, image.color.g, image.color.b , 0f);
             tmpUGUI.color = new Color(tmpUGUI.color.r, tmpUGUI.color.g, tmpUGUI.color.b , 0f);
             gameObject.SetActive(false);
@@ -54,6 +50,11 @@ namespace Damath
         public void OnPointerExit(PointerEventData eventData)
         {
             IsHovered = false;
+        }
+
+        public void SetText(string text)
+        {
+            tmpUGUI.text = text;
         }
 
         public async void SetVisible(bool value)
@@ -112,12 +113,7 @@ namespace Damath
         
         public void SetElement(IUIElement obj)
         {
-            this.element = obj;
-        }
-
-        public void SetText(string value)
-        {
-            tmpUGUI.text = value;
+            element = obj;
         }
 
         public void SetColor(Color color)

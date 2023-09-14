@@ -7,40 +7,29 @@ using Unity.VisualScripting;
 
 namespace Damath
 {
-    public class ToggleButton : MonoBehaviour, IUIElement, ITooltip
+    public class ToggleButton : MonoBehaviour, IUIElement
     {
-        public bool IsVisible { get; set; }
         public Sprite Icon = null;
-        public bool Value { get; set; }
-        public Tooltip Tooltip { get; set; }
-        [field: TextArea, SerializeField] public string TooltipText { get; set; }
+        [field: SerializeField] public bool Value { get; set; }
+        public bool IsVisible { get; set; }
         public bool IsHovered { get; set; }
-        private UnityEngine.UI.Button button;
-        private TextMeshProUGUI tmpUGUI;
-  
-        void Awake()
-        {
-            button = GetComponent<UnityEngine.UI.Button>();
-            tmpUGUI = transform.Find("Text").GetComponent<TextMeshProUGUI>();
-        }
+        [SerializeField] private UnityEngine.UI.Toggle button;
+        [SerializeField] private TextMeshProUGUI tmpUGUI;
 
         void Start()
         {
-            Tooltip = Game.UI.CreateTooltip(this, TooltipText);
+            // Tooltip = Game.UI.CreateTooltip(this, TooltipText);
             Value = false;
-            AddListener(ToggleValue);
         }
 
         public void OnPointerEnter(PointerEventData eventData)
         {
             IsHovered = true;
-            Tooltip.SetVisible(true);
         }
         
         public void OnPointerExit(PointerEventData eventData)
         {
             IsHovered = false;
-            Tooltip.SetVisible(false);
         }
 
         public bool GetValue()
@@ -52,15 +41,15 @@ namespace Damath
         {
             Value = !Value;
         }
+        
+        public void SetValue(bool value)
+        {
+            Value = value;
+        }
 
         public void SetText(string value)
         {
             tmpUGUI.text = value;
-        }
-        
-        public void SetTooltip(string value)
-        {
-            Tooltip.SetText(value);
         }
 
         public void SetIcon(Sprite icon)
@@ -71,11 +60,11 @@ namespace Damath
             }
         }
 
-        public void AddListener(UnityAction function)
+        public void AddListener(UnityAction<bool> function)
         {
             if (button != null)
             {
-                button.onClick.AddListener(function);
+                button.onValueChanged.AddListener(function);
             }
         }
     }

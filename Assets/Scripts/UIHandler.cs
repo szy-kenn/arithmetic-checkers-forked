@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using Microsoft.Unity.VisualStudio.Editor;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Damath
 {
@@ -11,10 +13,12 @@ namespace Damath
         public Dictionary<string, Sprite> Icons = new();
         
         [Header("Prefabs")]
+        [SerializeField] private UnityEngine.UI.Image dim;
         public GameObject windowPrefab;
         public GameObject choiceWindowPrefab;
         public GameObject choicePrefab;
-        public GameObject tooltipPrefab;
+        private bool IsDimmed;
+        [SerializeField] private Tooltip tooltipPrefab;
 
         void Awake()
         {
@@ -69,13 +73,16 @@ namespace Damath
         /// <param name="element"></param>
         /// <param name="text"></param>
         /// <returns></returns>
-        public Tooltip CreateTooltip(IUIElement element, string text)
+        public void ShowTooltip(IUIElement element, string text)
         {
-            var newTooltip = Instantiate(tooltipPrefab, Input.mousePosition, Quaternion.identity, Canvas.transform);
-            Tooltip m_tooltip = newTooltip.GetComponent<Tooltip>();
-            m_tooltip.SetElement(element);
-            m_tooltip.SetText(text);
-            return m_tooltip;
+            tooltipPrefab.SetElement(element);
+            tooltipPrefab.SetText(text);
+            tooltipPrefab.SetActive(true);
+        }
+
+        public void HideTooltip()
+        {
+            tooltipPrefab.SetActive(false);
         }
 
         public Tooltip CreateTooltip(IUIElement element, string text, Color color)
@@ -86,6 +93,28 @@ namespace Damath
             m_tooltip.SetText(text);
             m_tooltip.SetColor(color);
             return m_tooltip;
+        }
+
+        public void Dim(float time)
+        {
+            if (IsDimmed)
+            {
+                LeanTween.value(dim.gameObject, dim.color.a, 0f, time)
+                .setEaseOutExpo()
+                .setOnUpdate( (i) =>
+                {
+                    dim.color = new (dim.color.r, dim.color.g, dim.color.b, i);
+                });
+            } else
+            {
+                LeanTween.value(dim.gameObject, 0f, 0.25f, time)
+                .setEaseOutExpo()
+                .setOnUpdate( (i) =>
+                {
+                    dim.color = new (dim.color.r, dim.color.g, dim.color.b, i);
+                });
+            }
+            IsDimmed = !IsDimmed;
         }
     }
 }

@@ -32,8 +32,8 @@ namespace Damath
 
         void Start()
         {
-            Game.Console.Log($"Initialized match {Rules.Mode}");
-            Game.Events.MatchCreate(this);
+            // Game.Console.Log($"Initialized match {Rules.Mode}");
+            // Game.Events.MatchCreate(this);
         }
 
         public void ReceiveRuleset(Ruleset rules)

@@ -1,3 +1,5 @@
+using System;
+using UnityEngine.EventSystems;
 
 namespace Damath
 {
@@ -7,5 +9,7 @@ namespace Damath
     public interface IUIElement : IHoverable
     {
         public bool IsVisible { get; set; }   
+        
+        public static event EventHandler<PointerEventData> OnTooltipCreate;
     }
 }

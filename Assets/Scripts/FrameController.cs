@@ -9,6 +9,7 @@ namespace Damath
     {
         [field: SerializeField] public Frame CurrentFrame { get; set; }
         public List<Frame> Frames = new();
+        private bool IsTransitioning = false;
 
         [SerializeField] GameObject inactive;
 
@@ -25,6 +26,8 @@ namespace Damath
             if (CurrentFrame != null)
             {
                 if (CurrentFrame.Name == name) return;
+                if (IsTransitioning) return;
+                IsTransitioning = true;
 
                 if (Settings.EnableAnimations)
                 {
@@ -44,6 +47,7 @@ namespace Damath
                     .setOnComplete( () =>
                     {
                         CurrentFrame = frame;
+                        IsTransitioning = false;
                     });
                 }
             }

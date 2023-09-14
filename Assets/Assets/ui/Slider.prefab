@@ -127,9 +127,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Value: 0
-  MinRange: 0
-  MaxRange: 1
   KnobColor: {r: 1, g: 1, b: 1, a: 1}
+  OnColor: {r: 1, g: 1, b: 1, a: 1}
+  OffColor: {r: 1, g: 1, b: 1, a: 1}
   knobRect: {fileID: 2072284436408456609}
 --- !u!1 &2072284437170962442
 GameObject:
@@ -167,8 +167,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.15957642}
-  m_SizeDelta: {x: -50, y: -40.319153}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: -40}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2072284437170962447
 CanvasRenderer:
@@ -191,7 +191,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 0.26326096, g: 0.4523852, b: 0.6415094, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

@@ -1,9 +1,10 @@
 
+
 namespace Damath
 {
     public interface ITooltip : IHoverable
     {
-        Tooltip Tooltip { get; set; }
-        string TooltipText { get; set; }
+        public bool EnableTooltip { get; set; }
+        public string TooltipText { get; set; }
     }
 }

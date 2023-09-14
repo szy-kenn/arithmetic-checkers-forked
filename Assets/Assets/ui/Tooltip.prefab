@@ -93,13 +93,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4584ead8a37b50e42a1236769d918183, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Enable: 1
   Text: 
+  IsVisible: 0
   ShowDelay: 1
   HideDelay: 0
   FadeTransition: 1
   FadeInDuration: 0.25
   FadeOutDuration: 0.25
-  Enable: 1
+  rect: {fileID: 3990577252084355901}
+  image: {fileID: 3990577252084355900}
+  tmpUGUI: {fileID: 3990577253348019447}
 --- !u!210 &3910922287463087841
 SortingGroup:
   m_ObjectHideFlags: 0
@@ -109,7 +113,7 @@ SortingGroup:
   m_GameObject: {fileID: 3990577252084355902}
   m_Enabled: 1
   m_SortingLayerID: 2021306435
-  m_SortingLayer: 7
+  m_SortingLayer: 8
   m_SortingOrder: 0
 --- !u!114 &3990577252084355898
 MonoBehaviour:
