@@ -1,14 +1,15 @@
 using System;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class SideBarOnHover : MonoBehaviour, IPointerClickHandler
+public class SidebarController : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     public GameObject SideBar;
     public GameObject TitleScreen;
     public Image SideBarImage;
-    public RectTransform SideBarRectTransform;
+    [SerializeField] private RectTransform rect;
     public RectTransform TitleScreenRectTransform;
 
     public Vector2 SideBarSize;
@@ -16,8 +17,8 @@ public class SideBarOnHover : MonoBehaviour, IPointerClickHandler
     public float ScreenWidth;
 
     public float ExitedWidth;       // captures the width when the pointer exits
-    public float StartingWidth;     // collapsed sidebar width
-    public float FinalWidth;        // expanded sidebar width
+    public float StartingWidth = 250f;     // collapsed sidebar width
+    public float FinalWidth = 600f;        // expanded sidebar width
 
     // two boolean variables to check every update
     // ChangedValue will only be true once IsHovered variable changes,
@@ -38,16 +39,15 @@ public class SideBarOnHover : MonoBehaviour, IPointerClickHandler
     public Color HoveredColor = new Color(38/255f, 60/255f, 82/255f, 1f);
 
     void Start()
-
     {
         // stores the reference to the GameObject components
         SideBarImage = SideBar.GetComponent<Image>();
-        SideBarRectTransform = SideBar.GetComponent<RectTransform>();
+        rect = SideBar.GetComponent<RectTransform>();
         TitleScreenRectTransform = TitleScreen.GetComponent<RectTransform>();     
 
-        SideBarSize = SideBarRectTransform.sizeDelta;
+        SideBarSize = rect.sizeDelta;
         TitleScreenSize = TitleScreenRectTransform.sizeDelta;
-        ScreenWidth = SideBarRectTransform.sizeDelta.x + TitleScreenRectTransform.sizeDelta.x;
+        ScreenWidth = rect.sizeDelta.x + TitleScreenRectTransform.sizeDelta.x;
 
         // the final width should be twice as wide as the initial width
         StartingWidth = SideBarSize.x;
@@ -57,6 +57,22 @@ public class SideBarOnHover : MonoBehaviour, IPointerClickHandler
        
     }
 
+    public void OnPointerEnter(PointerEventData pointerEventData)
+    {
+        
+    }
+
+    public void OnPointerClick(PointerEventData pointerEventData)
+    {
+        Toggle();
+        LeanTween.size(rect, new Vector2(600f, rect.sizeDelta.y), 0.5f).setEaseOutExpo();
+    }
+    
+    
+    public void OnPointerExit(PointerEventData pointerEventData)
+    {
+        LeanTween.size(rect, new Vector2(360f, rect.sizeDelta.y), 0.5f).setEaseOutExpo();
+    }
 
     void Update()
     {
@@ -81,8 +97,8 @@ public class SideBarOnHover : MonoBehaviour, IPointerClickHandler
             {
                 ElapsedTime += Time.deltaTime;
                 _percent = ElapsedTime / Duration;
-                SideBarRectTransform.sizeDelta = new Vector2(Mathf.Lerp(StartingWidth, FinalWidth, Mathf.SmoothStep(0, 1, _percent)), SideBarSize.y);
-                TitleScreenRectTransform.sizeDelta = new Vector2(ScreenWidth - SideBarRectTransform.sizeDelta.x, TitleScreenSize.y);
+                rect.sizeDelta = new Vector2(Mathf.Lerp(StartingWidth, FinalWidth, Mathf.SmoothStep(0, 1, _percent)), SideBarSize.y);
+                TitleScreenRectTransform.sizeDelta = new Vector2(ScreenWidth - rect.sizeDelta.x, TitleScreenSize.y);
             }
         }
         else
@@ -93,7 +109,7 @@ public class SideBarOnHover : MonoBehaviour, IPointerClickHandler
             {
                 // captures the current width of the sidebar as soon as the pointer exits
                 // this will serve as the starting width for the collapse animation
-                ExitedWidth = SideBarRectTransform.sizeDelta.x;
+                ExitedWidth = rect.sizeDelta.x;
                 ChangedValue = false;
 
             }
@@ -101,8 +117,8 @@ public class SideBarOnHover : MonoBehaviour, IPointerClickHandler
             {
                 ElapsedTime -= Time.deltaTime;
                 _percent = ElapsedTime / Duration;
-                SideBarRectTransform.sizeDelta = new Vector2(Mathf.Lerp(ExitedWidth, StartingWidth, Mathf.SmoothStep(0, 1, Math.Abs(1 - _percent))), SideBarSize.y);
-                TitleScreenRectTransform.sizeDelta = new Vector2(ScreenWidth - SideBarRectTransform.sizeDelta.x, TitleScreenSize.y);
+                rect.sizeDelta = new Vector2(Mathf.Lerp(ExitedWidth, StartingWidth, Mathf.SmoothStep(0, 1, Math.Abs(1 - _percent))), SideBarSize.y);
+                TitleScreenRectTransform.sizeDelta = new Vector2(ScreenWidth - rect.sizeDelta.x, TitleScreenSize.y);
             }
         }
 
@@ -134,9 +150,4 @@ public class SideBarOnHover : MonoBehaviour, IPointerClickHandler
     //{
     //    Toggle();
     //}
-
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        Toggle();
-    }
 }

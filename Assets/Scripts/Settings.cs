@@ -12,7 +12,8 @@ namespace Damath
         public static float soundVolume = 1.0f;
         public static float musicVolume = 1.0f;
         public static bool EnableAnimations = true;
-        public static float PieceGrabDelay = 0.2f; // milliseconds
+        public static float AnimationFactor = 0.5f;
+        public static float PieceGrabDelay = 0.1f; // milliseconds
 
         public class KeyBinds
         {

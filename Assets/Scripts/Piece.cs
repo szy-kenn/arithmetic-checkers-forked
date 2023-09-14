@@ -5,6 +5,8 @@ using UnityEditor;
 using TMPro;
 using System;
 using UnityEngine.EventSystems;
+using UnityEngine.Rendering;
+using Unity.VisualScripting;
 
 namespace Damath
 {
@@ -58,76 +60,42 @@ namespace Damath
         public static Piece Create(Cell cell)
         {
             Piece newPiece = Instantiate(prefab).GetComponent<Piece>();
+            newPiece.SetCell(cell);
             return newPiece;
         }
 
-        public static Piece Create(Piece piece)
+        public static Piece Create(Piece piece, int sortingLayer = 5)
         {
-            Piece newPiece = Instantiate(piece.gameObject).GetComponent<Piece>();
+            Piece newPiece = Instantiate(piece.gameObject, piece.transform.parent).GetComponent<Piece>();
+            // newPiece.GetComponent<SpriteRenderer>().sortingLayerID = sortingLayer;
             return newPiece;
+        }
+
+        public void SetSortingLayer(int layerID)
+        {
+
         }
 
         public void Init(Side side, string value, bool isKing)
         {
 
         }
-        
-        public List<Move> GetMoves(Piece piece)
+
+        public void ResetPosition()
         {
-            return new List<Move>();
+            transform.position = Cell.transform.position;
         }
 
-        public void OnMouseEnter()
-        {
-            Debug.Log("enter");
-        }
-
-        public void OnMouseDown()
-        {
-            Debug.Log("clicked on piece");
-            Game.Events.PieceSelected(this);
-        }
-        
-        public void OnMouseDrag()
-        {
-            if (!IsSelected) return;
-            Debug.Log("dragging piece");
-        }
-
-        public void Select()
-        {
-            if (IsSelected) return;
-
-            IsSelected = true;
-            SelectedBy = null;
-            // Game.Events.PieceSelect(this);
-        }
-
-        /// <summary>
-        /// Select this piece as a player.
-        /// </summary>
-        /// <param name="player"></param>
-        public void SelectAs(Player player)
-        {
-            if (IsSelected) return;
-            // if (player.Side != Side) return;
-
-            IsSelected = true;
-            SelectedBy = player;
-            Game.Events.PlayerSelectPiece(player, this);
-        }
-        
-        public void Deselect()
-        {
-            IsSelected = false;
-            SelectedBy = null;
-        }
-
-        public void SetCell(Cell cell)
+        public void SetCell(Cell cell, bool move = true)
         {
             Cell = cell;
             Col = cell.Col;
             Row = cell.Row;
+
+            if (move)
+            {
+                transform.position = cell.transform.position;
+            }
         }
 
         public void SetValue(string value)

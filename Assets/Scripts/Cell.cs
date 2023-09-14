@@ -25,6 +25,21 @@ namespace Damath
             spriteRenderer = GetComponent<SpriteRenderer>();
         }
 
+        void Start()
+        {
+            Game.Events.OnDeselect += Reset;
+        }
+
+        public void OnMouseEnter()
+        {
+            
+        }
+
+        public void Reset()
+        {
+            IsValidMove = false;
+        }
+
         public static Cell Create(int col, int row)
         {
             Cell cell = Instantiate(prefab).GetComponent<Cell>();

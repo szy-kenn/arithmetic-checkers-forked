@@ -24,7 +24,7 @@ namespace Damath
 
         void Start()
         {
-            Tooltip = Game.UI.CreateTooltip(this, TooltipText);
+            // Tooltip = Game.UI.CreateTooltip(this, TooltipText);
         }
 
         public void OnPointerEnter(PointerEventData eventData)

@@ -6,7 +6,6 @@ namespace Damath
 {
     /// <summary>
     /// A ruleset defines the rules for a match.
-    /// It is created and modified only in the Title Scene.
     /// </summary>
     public class Ruleset : INetworkSerializable
     {

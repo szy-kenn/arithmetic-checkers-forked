@@ -27,11 +27,13 @@ namespace Damath
         public event Action<Player> OnPlayerRightClick;
         public event Action<Player> OnPlayerHold;
         public event Action<Player> OnPlayerRelease;
+        public event Action<Player> OnPlayerDeselect;
         public event Action<Player, string> OnPlayerSendMessage;
         public event Action<Player, string> OnPlayerCommand;
         public event Action<Player, Cell> OnPlayerSelectCell;
         public event Action<Player, Piece> OnPlayerSelectPiece;
         public event Action<Player, Piece> OnPlayerHoldPiece;
+        public event Action<Player, Cell> OnPlayerSelectMovecell;
         public event Action<Player, Move> OnPlayerSelectMove;
 
         #endregion
@@ -118,9 +120,6 @@ namespace Damath
             OnPlayerCreate?.Invoke(player);
         }
 
-        /// <summary>
-        /// Called when player left clicks.
-        /// </summary>
         public void PlayerLeftClick(Player player)
         {
             OnPlayerLeftClick?.Invoke(player);
@@ -132,7 +131,7 @@ namespace Damath
         }
 
         /// <summary>
-        /// Called when player holds.
+        /// Fired every frame a player holds left click.
         /// </summary>
         public void PlayerHold(Player player)
         {
@@ -140,7 +139,7 @@ namespace Damath
         }
 
         /// <summary>
-        /// Called when player releases.
+        /// Fired when a player releases left click.
         /// </summary>
         public void PlayerRelease(Player player)
         {
@@ -172,8 +171,18 @@ namespace Damath
             OnPlayerHoldPiece?.Invoke(actor, piece);
         }
 
+        public void PlayerSelectMovecell(Player player, Cell cell)
+        {
+            OnPlayerSelectMovecell?.Invoke(player, cell);
+        }
+
+        public void PlayerDeselect(Player player)
+        {
+            OnPlayerDeselect?.Invoke(player);
+        }
+
         /// <summary>
-        /// Fired when a player selects a valid move.
+        /// Fired when a player performs a valid move.
         /// </summary>
         /// <param name="actor"></param>
         /// <param name="piece"></param>

@@ -10,7 +10,7 @@ namespace Damath
         [SerializeField] int maximumColumns = 8;
         [SerializeField] int MaximumRows = 8;
         public Themes Theme;
-        public Ruleset Rules { get; private set; }
+        [field: SerializeField] public Ruleset Rules { get; private set; }
         public static Dictionary<(int, int), Cell> Cellmap = new();
         [SerializeField] private Cell SelectedCell = null;
         public Piece SelectedPiece = null;
@@ -20,8 +20,8 @@ namespace Damath
         public bool TurnRequiresCapture = false;
         public bool IsFlipped = false;
         private readonly Dictionary<Side, Player> Players = new();
-        public int TurnNumber;
-        public Side TurnOf = Side.Bot;
+        public int TurnNumber = -1;
+        public Side TurnOf;
 
         [Header("Objects")]
         [SerializeField] GameObject cellGroup;
@@ -32,18 +32,17 @@ namespace Damath
         [SerializeField] GameObject boardPrefab;
         [SerializeField] Cell cellPrefab;
         [SerializeField] Piece piecePrefab;
-
         RectTransform rectTransform;
 
         void Awake()
         {
-            rectTransform = this.GetComponent<RectTransform>();
+            rectTransform = GetComponent<RectTransform>();
             Theme = transform.Find("Theme").GetComponent<Themes>();
         }
 
         void Start()
         {
-            //
+
         }
 
         public void Reset()
@@ -52,36 +51,39 @@ namespace Damath
             TurnOf = Rules.FirstTurn;
         }
 
-        public void ChangeTurns(Piece piece)
+        public void ChangeTurns(Side side = default)
         {
-            if (TurnOf == Side.Bot)
+            if (side != default)
             {
-                TurnOf = Side.Top;
-                // TimerManager.orangeTimer.Begin();
-            } else if (TurnOf == Side.Top)
+                TurnOf = side;
+            } else
             {
-                TurnOf = Side.Bot;
-                // TimerManager.blueTimer.Begin();
+                if (TurnOf == Side.Bot)
+                {
+                    TurnOf = Side.Top;
+                } else if (TurnOf == Side.Top)
+                {
+                    TurnOf = Side.Bot;
+                }
             }
-            TurnNumber++;
 
+            TurnNumber++;
             ClearValidMoves();
             Game.Events.ChangeTurn(TurnOf);
-            
-            // Console.Log($"[GAME]: Changed turns");
+        }
 
-            // TimerManager.blueTimer.SetTime(60f);
-            // TimerManager.orangeTimer.SetTime(60f);
+        public void ChangeTurns(Piece piece)
+        {
+            ChangeTurns();
         }
 
         void OnEnable()
         {
             Game.Events.OnRulesetCreate += ReceiveRuleset;
             Game.Events.OnMatchBegin += Init;
-            Game.Events.OnPlayerSelectCell += SelectCellAsPlayer;
-            Game.Events.OnPlayerSelectPiece += SelectPieceAsPlayer;
-            Game.Events.OnPieceDeselect += ClearValidMoves;
-            // Game.Events.OnMoveSelect += SelectMove;
+            Game.Events.OnPlayerSelectPiece += SelectPiece;
+            Game.Events.OnPlayerSelectMovecell += SelectMovecell;
+            Game.Events.OnDeselect += ClearValidMoves;
             Game.Events.OnMoveTypeRequest += UpdateMoveType;
             Game.Events.OnRequireCapture += UpdateRequireCaptureState;
             Game.Events.OnPieceDone += CheckForKing;
@@ -93,11 +95,9 @@ namespace Damath
         {
             Game.Events.OnRulesetCreate -= ReceiveRuleset;
             Game.Events.OnMatchBegin -= Init;
-            Game.Events.OnPlayerSelectCell -= SelectCellAsPlayer;
-            Game.Events.OnPlayerSelectPiece -= SelectPieceAsPlayer;
-            Game.Events.OnPieceDeselect -= ClearValidMoves;
-            Game.Events.OnPlayerHoldPiece -= DragPiece;
-            // Game.Events.OnMoveSelect -= SelectMove;
+            Game.Events.OnPlayerSelectPiece -= SelectPiece;
+            Game.Events.OnPlayerSelectMovecell -= SelectMovecell;
+            Game.Events.OnDeselect -= ClearValidMoves;
             Game.Events.OnMoveTypeRequest -= UpdateMoveType;
             Game.Events.OnRequireCapture -= UpdateRequireCaptureState;
             Game.Events.OnPieceDone -= CheckForKing;
@@ -180,12 +180,9 @@ namespace Damath
 
         #endregion
 
-        public void DragPiece(Player player, Piece piece)
-        {
-            Piece.Create(piece).name += " (Held)";
-            
-        }
-
+        /// <summary>
+        /// Flips the board.
+        /// </summary>
         public void Flip()
         {
             if (IsFlipped)
@@ -219,15 +216,6 @@ namespace Damath
             Game.Console.Log("Flipped board");
         }
 
-        public void GetPlayer(Player player)
-        {
-            if (Settings.EnableDebugMode)
-            {
-                Game.Console.Log($"[BOARD]: Created {player}");
-            }
-            Players.Add(player.Side, player);
-        }
-
         public void ClearValidMoves()
         {
             foreach (var move in ValidMoves)
@@ -237,19 +225,15 @@ namespace Damath
             ValidMoves.Clear();
         }
         
-        public void ClearValidMoves(Side side)
-        {
-            ClearValidMoves();
-        }
-
-        public void ClearValidMoves(Piece piece)
-        {
-            ClearValidMoves();
-        }
-
         public void ReceiveRuleset(Ruleset rules)
         {
+            if (Settings.EnableDebugMode)
+            {
+                Game.Console.Log("[Debug]: [Board]: Received ruleset");
+            }
+
             Rules = rules;
+            ChangeTurns(Rules.FirstTurn);
         }
 
         /// <summary>
@@ -265,44 +249,13 @@ namespace Damath
             TurnRequiresCapture = value;
         }
 
-        public void Deselect()
-        {
-            SelectedCell = null;
-            SelectedPiece = null;
-            ClearValidMoves();
-            Game.Events.Deselect();
-        }
-
-        // public void SelectCell(Cell cell)
-        // {
-        //     SelectedCell = cell;
-
-        //     if (cell.HasPiece)
-        //     {
-        //         SelectPiece(cell.Piece);
-        //     } else
-        //     {
-        //         if (!cell.IsValidMove) Deselect();
-
-        //         SelectMovecell(cell);
-        //     }
-        // }
-
-        public void SelectCellAsPlayer(Player player, Cell cell)
-        {
-            if (!cell.IsValidMove) Deselect();
-
-            SelectMovecellAsPlayer(player, cell);
-        }
-
-        public void SelectPiece(Piece piece)
-        {
-            if (SelectedPiece != null)
-            {
-                Deselect();
-            }
-            SelectedPiece = piece;
-        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="piece"></param>
+        public void SelectPiece(Player player, Piece piece)
+        {        
             if (!TurnRequiresCapture)
             {
                 ValidMoves = GetPieceMoves(piece);
@@ -313,37 +266,15 @@ namespace Damath
                 ValidMoves = GetPieceMoves(piece, MoveType.Capture);
             }
             
-            Game.Events.PieceSelected(piece);
             Game.Events.BoardUpdateValidMoves(ValidMoves);
         }
 
-        public void SelectPieceAsPlayer(Player player, Piece piece)
-        {
-            if (TurnOf != player.Side) return;
-            if (piece.Side != player.Side) return;
-            if (MovedPiece != null) if (piece != MovedPiece) return;
-
-            SelectPiece(piece);
-            Game.Audio.PlaySound("Select");
-        }
-
-        // public void SelectMovecell(Cell cell)
-        // {
-        //     if (ValidMoves.Count == 0) return;
-
-        //     foreach (Move move in ValidMoves)
-        //     {
-        //         if (cell != move.destinationCell) continue;
-
-        //         if (cell == move.destinationCell)
-        //         {
-        //             PerformMove(move);
-        //             break;
-        //         }
-        //     }
-        // }
-
-        public void SelectMovecellAsPlayer(Player player, Cell cell)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="cell"></param>
+        public void SelectMovecell(Player player, Cell cell)
         {
             if (ValidMoves.Count == 0) return;
 
@@ -353,18 +284,16 @@ namespace Damath
 
                 if (cell == move.destinationCell)
                 {
-                    SelectMoveAsPlayer(player, move);
+                    SelectMove(player, move);
                     break;
                 }
             }
         }
 
-        public void SelectMoveAsPlayer(Player player, Move move)
+        public void SelectMove(Player player, Move move)
         {
             move.SetPlayer(player);
             PerformMove(move);
-            Game.Events.PlayerSelectMove(player, move);
-            Game.Audio.PlaySound("Move");
         }
 
         /// <summary>
@@ -373,7 +302,7 @@ namespace Damath
         public void PerformMove(Move move)
         {
             ClearValidMoves();
-            Piece movedPiece = move.originCell.Piece;
+            Piece movedPiece = move.Piece;
             Game.Events.PieceMove(move);
             Game.Console.Log($"[ACTION]: Moved {movedPiece.Value}: ({move.originCell.Col}, {move.originCell.Row}) -> ({move.destinationCell.Col}, {move.destinationCell.Row})");
             AnimateMove(move);
@@ -445,10 +374,11 @@ namespace Damath
             if (Settings.EnableAnimations)
             {
                 LeanTween.move(move.destinationCell.Piece.gameObject, move.destinationCell.transform.position, 0.5f).setEaseOutExpo();
-            } else
-            {
-                move.destinationCell.Piece.transform.position = move.destinationCell.transform.position;
             }
+            // else
+            // {
+            //     move.destinationCell.Piece.transform.position = move.destinationCell.transform.position;
+            // }
         }
 
         /// <summary>

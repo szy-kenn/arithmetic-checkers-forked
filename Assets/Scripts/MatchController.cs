@@ -14,16 +14,11 @@ namespace Damath
     /// </summary>
     public class MatchController : MonoBehaviour
     {
-        [Header("Match")]
-        public Ruleset Rules;
+        [field: Header("Match")]
+        public Ruleset Rules { get; private set; }
         public bool IsPlaying { get; set; }
-        public bool IsOnline { get; set; }
-        public Lobby Lobby;
-        [SerializeField] private  Cell SelectedCell = null;
-        [SerializeField] private Piece SelectedPiece = null;
-        public bool EnablePlayerControls = false;
-        [SerializeField] GameObject playerPrefab;
-        [SerializeField] LobbyManager LobbyHandler;
+        public bool IsMultiplayer { get; set; }
+        [SerializeField] private GameObject playerPrefab;
 
         void Awake()
         {
@@ -37,16 +32,18 @@ namespace Damath
 
         void Start()
         {
-            // Auto creates a classic match if none created upon starting
-            if (Game.Main.Ruleset != null)
-            {
-                Rules = Game.Main.Ruleset;
-            } else
-            {
-                Rules = new();
-            }
-            Game.Console.Log($"Created match {Rules.Mode}");
+            Game.Console.Log($"Initialized match {Rules.Mode}");
             Game.Events.MatchCreate(this);
+        }
+
+        public void ReceiveRuleset(Ruleset rules)
+        {
+            if (Settings.EnableDebugMode)
+            {
+                Game.Console.Log("[Debug]: [Match]: Received ruleset");
+            }
+
+            Rules = rules;
         }
 
         public void Init()

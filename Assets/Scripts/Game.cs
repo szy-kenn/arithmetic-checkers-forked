@@ -96,8 +96,10 @@ namespace Damath
         /// </summary>
         public void CreateMatch(Ruleset.Type mode)
         {
-            Ruleset = new Ruleset(mode);
             LoadScene("Match", playTransition: true);
+            
+            Ruleset = new Ruleset(mode);
+            Events.RulesetCreate(Ruleset);
         }
 
         private void SetMatch(MatchController match)
@@ -121,5 +123,20 @@ namespace Damath
         {
             Nickname = value;
         }
+        
+        #region Debug
+
+        public void Debug_StartStandard()
+        {
+            CreateMatch(Ruleset.Type.Standard);
+            StartMatch();
+        }
+
+        public void Debug_Start()
+        {
+            StartMatch();
+        }
+
+        #endregion
     }
 }
