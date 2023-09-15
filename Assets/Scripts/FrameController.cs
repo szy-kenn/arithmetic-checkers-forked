@@ -15,7 +15,8 @@ namespace Damath
 
         void Start()
         {
-            //
+            if (CurrentFrame == null)
+            CurrentFrame = GetComponentInChildren<Frame>();
         }
 
         public void SwitchFrame(string name)
